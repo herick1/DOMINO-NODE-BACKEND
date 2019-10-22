@@ -8,9 +8,7 @@ const _ = require("lodash");
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 const port = process.env.PORT;
 
-
 var nextplayer = process.env.NEXT;
-
 
 var app = express();
 
@@ -20,7 +18,6 @@ app.use(
     exposedHeaders: "x-access-token"
   })
 );
-
 app.use(bodyParser.json());
 
 //endpoints
@@ -70,6 +67,32 @@ app.get("/endgame", urlencodedParser, (req, res) => {
 });
 
 
+//funcion global donde esta el usuario , TODO hacerlo con una base de datos
+let YO= {
+          name:"herick",
+          numeroplayer:1,
+          port: 10001,
+          url:"localhost" // esto se actuliza segun el POST registrarusuario
+        }; 
+
+//ESte post funciona para registrar la informacion de manera local en el servidor 
+//del nuevo usuario lo que se le pide es:
+/*{
+    "name":"herick",
+    "port": 10001,
+    "url":"localhost" //poner url privada en vez de localhost
+  };*/
+//TODO hacer que la ip de uno mismo sea automatico y no sea por parametro
+app.post("/registrarusuario", urlencodedParser, (req, res) => {
+  let body = _.pick(req.body, ["name","port","url"]);
+  console.log("4 :");
+  console.log(body);
+  YO.name = body.name;
+  YO.port = body.port;
+  YO.url = body.url;
+  res.json({ status: "success", message: body});
+});
+
 //get para ver los status 
 // el numero de player logre que se hiciera automatico , genial !
 app.get("/probando", urlencodedParser, (req, res) => {
@@ -77,8 +100,6 @@ app.get("/probando", urlencodedParser, (req, res) => {
 
   res.json({ status: "success", message: usuariosLista });
 });
-
-
 
 //new player lo vamos a utilizar para que los demas node.js sepan cuando un usuario se conecta a la red
 //esto va hacer despues del login en la aplicacion angular
@@ -97,14 +118,6 @@ app.get("/probando", urlencodedParser, (req, res) => {
 
 //aqui van a estar todos los usuarios esto es una lista de usuarios 
 var usuariosLista = [];
-let YO= {
-          name:"herick",
-          numeroplayer:1,
-          port: 10002,
-          url:"localhost" //TODO poner url real
-        }; //TODO hacer un post agregando los datos del mismo angular de la pc al inicio para depsues tener
-          //esta variable contenida en un post
-
 app.post("/newplayer", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["newplayer"]);
 
@@ -175,21 +188,19 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
   
 });
 
-
+//este post es para que el servidor node que se sta integrando en el sistema tenga las ip y los puertos
+//de los servidores que ya estan conectados
 app.post("/newplayerRetorno", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["newplayer"]);
-          console.log("3 :");
-console.log(body);
-    ExisteUsuario= false;
-
-    for (var i = 0; i < usuariosLista.length ; i++) {
-        if(usuariosLista[i] == body.newplayer )ExisteUsuario = true;
-    }
-    if(!ExisteUsuario)
-      usuariosLista.push(body.newplayer);  
+  console.log("3 :");
+  console.log(body);
+  ExisteUsuario= false;
+  for (var i = 0; i < usuariosLista.length ; i++) {
+      if(usuariosLista[i] == body.newplayer )ExisteUsuario = true;
+  }
+  if(!ExisteUsuario)  usuariosLista.push(body.newplayer);  
 
   res.json({ status: "success", message: "newplayerRetorno" });
-  
 });
 
 // not match endpoints
