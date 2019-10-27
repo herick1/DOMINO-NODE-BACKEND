@@ -71,7 +71,7 @@ app.get("/endgame", urlencodedParser, (req, res) => {
 let YO= {
           name:"herick",
           numeroplayer:1,
-          port: 10001,
+          port: 10002,
           url:"localhost" // esto se actuliza segun el POST registrarusuario
         }; 
 
@@ -100,6 +100,80 @@ app.get("/probando", urlencodedParser, (req, res) => {
 
   res.json({ status: "success", message: usuariosLista });
 });
+
+
+//variable global donde estaran todas las partidas guardadas en el servidor
+let partidas=[] //TODO crear clase partida y clase jugador para saber las fichas que tienen 
+
+//clase partida TODO moverla de aqui
+class Partida{
+  constructor (){
+    this.id = -1;
+    this.ipjugadorCreadorDeLaPartida = "";  
+    this.turno_jugador= 0;
+    this.jugador1 = {ip : "" , fichas : [] };
+    this.jugador2 = {ip : "" , fichas : [] };
+    this.estatus= "espera";
+    this.jugadoresEnEstaPartida = 0;
+    this.ganador = "";    
+  }
+}
+
+//metodo post para crear la partida , este es el que se hace del angular al node para crear la partida
+// cuando se crea una partida 
+//TODO el que crea la partida va a repartir las fichas
+
+//en el psotman mandar: 
+/*{
+  "id" : "localhost"
+}*/
+//TODO al agregar un jugador al juego tambien que se le traiga todas las partidas que esten
+app.post("/crearpartida", urlencodedParser, (req, res) => {
+  let partida = new Partida();
+  //TODO llenar las fichas 
+  partida.ipjugadorCreadorDeLaPartida = YO.url;
+  partida.id = partidas.length;
+  partidas.push(partida);
+  for (var i = 0; i < usuariosLista.length ; i++) {
+    let options = {
+        method: "POST",
+        uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/crearpartidaBackend", 
+        resolveWithFullResponse: true,
+        json: true,
+        body: {partida}
+    }
+    console.log("6: ");
+    console.log(options.body);
+    rp(options)
+        .then(response => {
+            console.log("pasamos la info para el siguiente");
+        })
+        .catch(e => {
+          console.log("Error haciendo la creaciacion de la aprtida del domino" );
+        });
+  }
+  res.json({ status: "success", message: partida});
+});
+
+
+
+//este metodo ocurre para que todos los node puedan tener este nueva partida guardada
+app.post("/crearpartidaBackend", urlencodedParser, (req, res) => {
+  let body = _.pick(req.body, ["partida"]);
+  var idExiste = false;
+  for (var i = 0; i< partidas.length; i++){
+    if(body.partida.id == partidas[i].id)  idExiste = true;
+  }
+  if(!idExiste) partidas.push(body.partida);
+  res.json({ status: "success", message: body});
+});
+
+app.get("/partidas", urlencodedParser, (req, res) => {
+  console.log(partidas);
+
+  res.json({ status: "success", message: partidas });
+});
+
 
 //new player lo vamos a utilizar para que los demas node.js sepan cuando un usuario se conecta a la red
 //esto va hacer despues del login en la aplicacion angular
@@ -177,6 +251,26 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
               .catch(e => {
                   console.log("Error pasando el new user ");
               });
+      //y por ultimo a esa maquina hay que hacerlo que agregue todas las partidas que ya estaban en juego
+      for (var i=0; i<partidas.length; i++){
+        let partida = partidas[i]; //intente hacer un foreach pero no me deja
+        let options = {
+            method: "POST",
+            uri: "http://"+ body.newplayer.url +":"+ body.newplayer.port + "/crearpartidaBackend", 
+            resolveWithFullResponse: true,
+            json: true,
+            body: { partida}
+        }
+        console.log("77:");
+        console.log(options.body);
+        rp(options)
+          .then(response => {
+            console.log("pasamos la info para el siguiente");
+          })
+          .catch(e => {
+            console.log("Error haciendo la creaciacion de la aprtida del domino" );
+          });
+      }
 
     }
   }else {

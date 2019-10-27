@@ -46,3 +46,12 @@ Ahora si vemos en pantalla cada uno tendra su numero de jugador (en consola de c
 
 
 y si volvemos hacer el GET de : localhost:10001/probando nos daremos cuenta que en cada maquina se a actualizado
+
+
+
+para el crearpartida 
+
+para probarlo primero hacemos un newplayer de 10001 a 10002 , despues de esto , en cualquiera de las dos maquinas hacemos el POST /crearpartida , sin ningun parameto, podemos inclusive crear partidas en 10001 y en 10002 
+
+despues de creadas las partidas , haremos el newplayer de 10003 , y si despues de hacer el newplayer
+hacemos el GET /partidas , veremos las partidas creadas , y si en el 10003 ejecutamos de nuevo el post de crear partida , se actualizaran en los otros dos nodos
