@@ -115,8 +115,27 @@ class Partida{
     this.jugador2 = {ip : "" , fichas : [] };
     this.estatus= "espera";
     this.jugadoresEnEstaPartida = 0;
-    this.ganador = "";    
+    this.ganador = "";
+    this.fichas_partida=["0:0","0:1","0:2","0:3","0:4","0:5","0:6",
+    "1:0","1:1","1:2","1:3","1:4","1:5","1:6",
+    "2:0","2:1","2:2","2:3","2:4","2:5","2:6",
+    "3:0","3:1","3:2","3:3","3:4","3:5","3:6",
+    "4:0","4:1","4:2","4:3","4:4","4:5","4:6",
+    "5:0","5:1","5:2","5:3","5:4","5:5","5:6",
+    "6:0","6:1","6:2","6:3","6:4","6:5","6:6"]
   }
+  llenarfichas(){
+    let lista_fichasrandom=[]
+    var ficha=-1
+  while (this.fichas_partida.length>0 && lista_fichasrandom.length<14) { 
+    console.log("entre")
+    ficha =(Math.floor(Math.random() * ((this.fichas_partida.length-1) - 0)) + 0);
+    lista_fichasrandom.push(this.fichas_partida[ficha])
+    this.fichas_partida.splice(ficha,1)
+  }
+    return lista_fichasrandom
+  
+}
 }
 
 //metodo post para crear la partida , este es el que se hace del angular al node para crear la partida
@@ -133,6 +152,9 @@ app.post("/crearpartida", urlencodedParser, (req, res) => {
   //TODO llenar las fichas 
   partida.ipjugadorCreadorDeLaPartida = YO.url;
   partida.id = partidas.length;
+  partida.jugador1.fichas=partida.llenarfichas()
+  partida.jugador2.fichas=partida.llenarfichas()
+  partida.fichas_partida=[]
   partidas.push(partida);
   for (var i = 0; i < usuariosLista.length ; i++) {
     let options = {
