@@ -55,3 +55,14 @@ para probarlo primero hacemos un newplayer de 10001 a 10002 , despues de esto , 
 
 despues de creadas las partidas , haremos el newplayer de 10003 , y si despues de hacer el newplayer
 hacemos el GET /partidas , veremos las partidas creadas , y si en el 10003 ejecutamos de nuevo el post de crear partida , se actualizaran en los otros dos nodos
+
+para el unirse partida
+ localhost:10001/unirsepartida
+luego de que la partida este creada se hace un Post a cualquier nodo indicandole por body lo siguiente
+{
+	"partida":{
+	"id": 0,
+	"port": 10002
+	}
+}
+luego con el get de partidas podemos comprobar que se unio

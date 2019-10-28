@@ -196,6 +196,70 @@ app.get("/partidas", urlencodedParser, (req, res) => {
   res.json({ status: "success", message: partidas });
 });
 
+//unirse a las partidas
+app.post("/unirsepartida", urlencodedParser, (req, res) => {
+  let body = _.pick(req.body, ["partida"]);
+  //ciclo encargado de actualizar localmente la partida con el nodo que se quiere unir a ella
+  for (var i = 0; i< partidas.length; i++){
+    if(partidas[i].estatus!="CERRADO"){
+    if(body.partida.id == partidas[i].id)
+      if(partidas[i].jugador1.ip== "")
+        partidas[i].jugador1.ip=body.partida.port
+      else 
+        if(partidas[i].jugador2.ip== ""){
+          if(partidas[i].jugador1.ip != body.partida.port){
+            partidas[i].jugador2.ip=body.partida.port
+            partidas[i].estatus="CERRADO"
+          }
+        }
+          
+  }
+  }
+  //ciclo encargado de replicar la informacion a los demas nodos
+  for (var i = 0; i < usuariosLista.length ; i++) {
+    let options = {
+        method: "PUT",
+        uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/unirsepartidaBackend", 
+        resolveWithFullResponse: true,
+        json: true,
+        body: {
+          "partida":{
+            "id":body.partida.id,
+            "port":body.partida.port
+          }
+          }
+    }
+    console.log(options.body);
+    rp(options)
+        .then(response => {
+            console.log("pasamos la info para el siguiente");
+        })
+        .catch(e => {
+          console.log("Error uniendose a la partida del domino"+e );
+        });
+  }
+  res.json({ status: "success", message: body});
+});
+
+//este metodo ocurre para que todos los node puedan tener este nueva partida guardada
+app.put("/unirsepartidaBackend", urlencodedParser, (req, res) => {
+  let body = _.pick(req.body, ["partida"]);
+  for (var i = 0; i< partidas.length; i++){
+    if(partidas[i].estatus!="CERRADO"){
+    if(body.partida.id == partidas[i].id)
+      if(partidas[i].jugador1.ip== "")
+        partidas[i].jugador1.ip=body.partida.port
+      else 
+      if(partidas[i].jugador2.ip== ""){
+        if(partidas[i].jugador1.ip != body.partida.port){
+          partidas[i].jugador2.ip=body.partida.port
+          partidas[i].estatus="CERRADO"
+        }
+      }       
+  }
+ }
+  res.json({ status: "success", message: body});
+});
 
 //new player lo vamos a utilizar para que los demas node.js sepan cuando un usuario se conecta a la red
 //esto va hacer despues del login en la aplicacion angular
