@@ -18,7 +18,6 @@ app.use(
 );
 app.use(bodyParser.json());
 
-
 //funcion global donde esta el usuario , TODO hacerlo con una base de datos
 let YO= {
           name:"herick",
@@ -62,7 +61,7 @@ class Partida{
   constructor (){
     this.id = -1;
     this.ipjugadorCreadorDeLaPartida = "";  
-    this.turno_jugador= 0;
+    this.turno_jugador= 1;
     this.jugador1 = {ip : "" , fichas : [] };
     this.jugador2 = {ip : "" , fichas : [] };
     this.estatus= "ESPERA";
@@ -81,13 +80,11 @@ class Partida{
     let lista_fichasrandom=[]
     var ficha=-1
   while (this.fichas_partida.length>0 && lista_fichasrandom.length<14) { 
-    console.log("entre")
     ficha =(Math.floor(Math.random() * ((this.fichas_partida.length-1) - 0)) + 0);
     lista_fichasrandom.push(this.fichas_partida[ficha])
     this.fichas_partida.splice(ficha,1)
   }
     return lista_fichasrandom
-  
 }
 }
 //metodo post para crear la partida , este es el que se hace del angular al node para crear la partida
@@ -189,7 +186,7 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
           console.log("Error uniendose a la partida del domino"+e );
         });
   }
-  res.json({ status: "success", message: body});
+  res.json({ status: "success", message: "correcto"});
 });
 
 //este metodo ocurre para que todos los node puedan tener este nueva partida guardada
@@ -256,7 +253,186 @@ app.put("/cambiarestatuspartida", urlencodedParser, (req, res) => {
   }
 });
 
+//manejar juego
+function jugar(ip,id,ficha,puerto){
+  function verificarigualdad(ficha,tablero){
+    if(ficha== tablero)
+    return true
+    else
+    return false
+  }
 
+  let existe=-1;
+  let separarficha=[]
+  let fichaizquierda=[]
+  let fichaderecha= []
+  let tablero= []
+  //ciclo encargado de actualizar localmente la partida con las fichas jugadas
+  for (var i = 0; i< partidas.length; i++){
+    if(partidas[i].estatus =="CERRADO"){
+      if(id == partidas[i].id){
+        if(partidas[i].turno_jugador==1){
+          if(partidas[i].jugador1.ip == ip){
+            existe= partidas[i].jugador1.fichas.indexOf(ficha)
+            if(existe != -1){
+              separarficha=ficha.split(":")
+              // validacion del tablaro vacio
+              if(partidas[i].fichas_jugadas.length ==0 ){
+                  //agrego en el tablero
+                partidas[i].fichas_jugadas.push(ficha)
+                //quito la pieza que agregue
+                partidas[i].jugador1.fichas.splice(existe,1)
+                partidas[i].turno_jugador=2
+                console.log("ENTrE EN la condicion de vacio")
+                console.log(" numero de fichas:: "+partidas[i].fichas_jugadas.length)
+              }
+            
+            //validaciones en el caso de que el tablero tenga fiichas
+            else{
+              // si solo tiene una ficha
+              tablero=partidas[i].fichas_jugadas[0].split(":")
+              if (partidas[i].fichas_jugadas.length ==1){
+                if (verificarigualdad(separarficha[1],tablero[0]) ){
+                  partidas[i].fichas_jugadas.unshift(ficha)
+                  partidas[i].jugador1.fichas.splice(existe,1)
+                  partidas[i].turno_jugador=2
+                }
+                else 
+                  if(verificarigualdad(separarficha[0],tablero[1])){
+                    //agrego en el tablero
+                    partidas[i].fichas_jugadas.push(ficha)
+                    //quito la pieza que agregue
+                    partidas[i].jugador1.fichas.splice(existe,1)
+                    partidas[i].turno_jugador=2
+                  }
+              }
+              // caso en el que el tablero tenga mas de una ficha colocada
+              else{
+                fichaizquierda=partidas[i].fichas_jugadas[0].split(":")
+                fichaderecha=partidas[i].fichas_jugadas[partidas[i].fichas_jugadas.length-1].split(":")
+                if (verificarigualdad(separarficha[1],fichaizquierda[0])){
+                  partidas[i].fichas_jugadas.unshift(ficha)
+                  partidas[i].jugador1.fichas.splice(existe,1)   
+                  partidas[i].turno_jugador=2
+                }
+                else
+                if(verificarigualdad(separarficha[0],fichaderecha[1])){
+                  //agrego en el tablero
+                  partidas[i].fichas_jugadas.push(ficha)
+                  //quito la pieza que agregue
+                  partidas[i].jugador1.fichas.splice(existe,1)
+                  partidas[i].turno_jugador=2
+                }
+
+              }
+              
+
+            } 
+        }
+        
+      }
+    }
+        }
+        //MANEJO DE JUGADOR 2
+        if(partidas[i].turno_jugador==2){
+          if(partidas[i].jugador2.ip==ip){
+            existe= partidas[i].jugador2.fichas.indexOf(ficha)
+            if(existe != -1){
+              separarficha=ficha.split(":")
+              // validacion del tablaro vacio
+              if(partidas[i].fichas_jugadas.length ==0 ){
+                //agrego en el tablero
+                partidas[i].fichas_jugadas.push(ficha)
+                //quito la pieza que agregue
+                partidas[i].jugador2.fichas.splice(existe,1)
+                partidas[i].turno_jugador=1
+              }
+            
+               //validaciones en el caso de que el tablero tenga fiichas
+              else{
+                // si solo tiene una ficha
+                tablero=partidas[i].fichas_jugadas[0].split(":")
+                if (partidas[i].fichas_jugadas.length ==1){
+                  if (verificarigualdad(separarficha[1],tablero[0]) ){
+                    partidas[i].fichas_jugadas.unshift(ficha)
+                    partidas[i].jugador2.fichas.splice(existe,1)
+                    partidas[i].turno_jugador=1
+                  }
+                  else 
+                    if(verificarigualdad(separarficha[0],tablero[1])){
+                      //agrego en el tablero
+                      partidas[i].fichas_jugadas.push(ficha)
+                      //quito la pieza que agregue
+                      partidas[i].jugador2.fichas.splice(existe,1)
+                      partidas[i].turno_jugador=1
+                    }
+                }
+              // caso en el que el tablero tenga mas de una ficha colocada
+              else{
+                fichaizquierda=partidas[i].fichas_jugadas[0].split(":")
+                fichaderecha=partidas[i].fichas_jugadas[partidas[i].fichas_jugadas.length-1].split(":")
+                if (verificarigualdad(separarficha[1],fichaizquierda[0])){
+                  partidas[i].fichas_jugadas.unshift(ficha)
+                  partidas[i].jugador2.fichas.splice(existe,1)   
+                  partidas[i].turno_jugador=1
+                }
+                else
+                if(verificarigualdad(separarficha[0],fichaderecha[1])){
+                  //agrego en el tablero
+                  partidas[i].fichas_jugadas.push(ficha)
+                  //quito la pieza que agregue
+                  partidas[i].jugador2.fichas.splice(existe,1)
+                  partidas[i].turno_jugador=1             
+                 }
+
+              }
+              
+
+            } 
+          }
+        }
+        }  
+      }
+    }
+  
+}
+
+app.post("/realizarJugada", urlencodedParser, (req, res) => {
+  let body = _.pick(req.body, ["ip","id","ficha"]);
+  jugar(body.ip,body.id,body.ficha)
+  //ciclo encargado de replicar la informacion a los demas nodos
+  for (var i = 0; i < usuariosLista.length ; i++) {
+    let options = {
+        method: "PUT",
+        uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/realizarjugadaBackend", 
+        resolveWithFullResponse: true,
+        json: true,
+        body: {
+            "ip":body.ip,
+            "id":body.id,
+            "ficha":body.ficha
+        }
+    }
+
+    console.log(options.body);
+    rp(options)
+        .then(response => {
+            console.log("pasamos la info para el siguiente");
+        })
+        .catch(e => {
+          console.log("Error realizando jugada"+e );
+        });
+        
+  }
+  res.json({ status: "success", message: body});
+});
+
+
+app.put("/realizarjugadaBackend", urlencodedParser, (req, res) => {
+  let body = _.pick(req.body, ["ip","id","ficha"]);
+ jugar(body.ip,body.id,body.ficha)
+res.json({ status: "success", message: "correcto"});
+});
 //new player lo vamos a utilizar para que los demas node.js sepan cuando un usuario se conecta a la red
 //esto va hacer despues del login en la aplicacion angular
 /*JSON que vamos a mandar:
@@ -350,7 +526,7 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
             console.log("pasamos la info para el siguiente");
           })
           .catch(e => {
-            console.log("Error haciendo la creaciacion de la aprtida del domino" );
+            console.log("Error haciendo la creaciacion de la partida del domino" );
           });
       }
 
