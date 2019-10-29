@@ -66,3 +66,12 @@ luego de que la partida este creada se hace un Post a cualquier nodo indicandole
 	}
 }
 luego con el get de partidas podemos comprobar que se unio
+
+Realizar jugada es al endpoint /realizarJugada haciendo un POST se deben pasar por body los siguientes parametros
+{
+	"id":0,
+	"ficha": "0:0",
+	"ip":"10002"
+	
+}
+se debe pasar la ip correspondiente al jugador que tiene el turno en ese momento
