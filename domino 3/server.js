@@ -18,6 +18,7 @@ app.use(
 );
 app.use(bodyParser.json());
 
+
 //funcion global donde esta el usuario , TODO hacerlo con una base de datos
 let YO= {
           name:"herick",
@@ -89,7 +90,6 @@ class Partida{
   
 }
 }
-
 //metodo post para crear la partida , este es el que se hace del angular al node para crear la partida
 // cuando se crea una partida 
 //TODO el que crea la partida va a repartir las fichas
@@ -156,16 +156,15 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
     if(partidas[i].estatus!="CERRADO"){
     if(body.partida.id == partidas[i].id)
       if(partidas[i].jugador1.ip== "")
-        partidas[i].jugador1.ip=body.partida.port
-      else 
+        partidas[i].jugador1.ip=body.partida.port //TODO cambiar port por url
+      else                                        //recorar que se pasa por el postman como port
         if(partidas[i].jugador2.ip== ""){
-          if(partidas[i].jugador1.ip != body.partida.port){
+          if(partidas[i].jugador1.ip != body.partida.port){ //TODO cambiar port por url 
             partidas[i].jugador2.ip=body.partida.port
             partidas[i].estatus="CERRADO"
           }
         }
-          
-  }
+    }
   }
   //ciclo encargado de replicar la informacion a los demas nodos
   for (var i = 0; i < usuariosLista.length ; i++) {
@@ -177,9 +176,9 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
         body: {
           "partida":{
             "id":body.partida.id,
-            "port":body.partida.port
+            "port":body.partida.port  //TODO poner url aqui en vez de port 
           }
-          }
+        }
     }
     console.log(options.body);
     rp(options)
@@ -200,18 +199,64 @@ app.put("/unirsepartidaBackend", urlencodedParser, (req, res) => {
     if(partidas[i].estatus!="CERRADO"){
     if(body.partida.id == partidas[i].id)
       if(partidas[i].jugador1.ip== "")
-        partidas[i].jugador1.ip=body.partida.port
+        partidas[i].jugador1.ip=body.partida.port //TODO poner url en vez de port 
       else 
       if(partidas[i].jugador2.ip== ""){
-        if(partidas[i].jugador1.ip != body.partida.port){
-          partidas[i].jugador2.ip=body.partida.port
-          partidas[i].estatus="CERRADO"
+        if(partidas[i].jugador1.ip != body.partida.port){ //TODO cambiar port por url
+          partidas[i].jugador2.ip=body.partida.port      //TODO cambiar port por url
+          partidas[i].estatus="CERRADO"               // TOdO interar el iniciarpartida aqui
         }
       }       
   }
  }
   res.json({ status: "success", message: body});
 });
+
+
+//esta es una funcion que se inicia automaticamente despues de hacerse un unir partida 
+//y que el que se haya unido sea el jugador
+//lo que hace es mandarle a todas a setear el valor del estatus 
+//TODO acoplar esta funcion en el post unise a la partida 
+function iniciarPartida(id_partida) {
+  partidas[id_partida].estatus= "CERRADO";
+  let idP = id_partida;
+  for (var i = 0; i < usuariosLista.length ; i++) {
+    let options = {
+        method: "PUT",
+        uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/cambiarestatuspartida", 
+        resolveWithFullResponse: true,
+        json: true,
+        body: { 
+          id : idP,
+          estatus : "CERRADO" 
+        }
+    }
+    console.log("9: ");
+    console.log(options.body);
+    rp(options)
+        .then(response => {
+            console.log("pasamos la info para el siguiente");
+        })
+        .catch(e => {
+          console.log("Error haciendo cambiar estatus de la aprtida del domino" );
+        });
+  } 
+}
+
+//esta funcion es ejecutada para que el nodo sepa que tiene que actualizar el estatus de la partida
+app.put("/cambiarestatuspartida", urlencodedParser, (req, res) => {
+  let body = _.pick(req.body, ["id", "estatus"]);
+  try {
+    partidas[body.id].estatus= body.estatus;
+    res.json({ status: "success", message: body});
+  }
+  catch(error) {
+      console.error(error);
+      res.json({ status: "error", message: "no se encontro esa id para cabiar el estatus"});
+  }
+});
+
+
 //new player lo vamos a utilizar para que los demas node.js sepan cuando un usuario se conecta a la red
 //esto va hacer despues del login en la aplicacion angular
 /*JSON que vamos a mandar:
