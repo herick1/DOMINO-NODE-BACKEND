@@ -8,8 +8,6 @@ const _ = require("lodash");
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 const port = process.env.PORT;
 
-var nextplayer = process.env.NEXT;
-
 var app = express();
 
 app.use(
@@ -19,53 +17,6 @@ app.use(
   })
 );
 app.use(bodyParser.json());
-
-//endpoints
-var nodeinfo = { haspapa: false };
-
-app.post("/catchball", urlencodedParser, (req, res) => {
-  let body = _.pick(req.body, ["ball"]);
-  if (body.ball == "1") {
-    nodeinfo.haspapa = true;
-  } else {
-    nodeinfo.haspapa = false;
-  }
-
-  let options = {
-    method: "POST",
-    uri: "http://localhost:" + nextplayer + "/catchball",
-    resolveWithFullResponse: true,
-    json: true,
-    body: { ball: "1" }
-  };
-
-  setTimeout(function() {
-    rp(options)
-      .then(response => {
-        nodeinfo.haspapa = false;
-        console.log("La papa se ha  ido para " + nextplayer);
-      })
-      .catch(e => {
-        console.log("Error pasando la papa a " + nextplayer);
-      });
-  }, 3000);
-
-  res.json({ status: "success", message: "catchball" });
-});
-
-app.get("/endgame", urlencodedParser, (req, res) => {
-  console.log(
-    "El nodo: " +
-      process.env.NAMENODE +
-      ", " +
-      (nodeinfo != null && nodeinfo.haspapa ? "" : "NO") +
-      " tiene la papa"
-  );
-
-  res.json({ status: "success", message: "endgame" });
-  process.exit(0);
-});
-
 
 //funcion global donde esta el usuario , TODO hacerlo con una base de datos
 let YO= {
