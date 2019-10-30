@@ -251,44 +251,58 @@ app.put("/unirsepartidaBackend", urlencodedParser, (req, res) => {
 //y que el que se haya unido sea el jugador
 //lo que hace es mandarle a todas a setear el valor del estatus 
 //TODO acoplar esta funcion en el post unise a la partida o borrarla
-function iniciarPartida(id_partida) {
-  partidas[id_partida].estatus= "JUGANDO";
-  let idP = id_partida;
-  for (var i = 0; i < usuariosLista.length ; i++) {
-    let options = {
-        method: "PUT",
-        uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/cambiarestatuspartida", 
-        resolveWithFullResponse: true,
-        json: true,
-        body: { 
-          id : idP,
-          estatus : "JUGANDO" 
+function Abandonar(id_partida, estatus) {
+  for(var i=0; i< partidas.length; i++){
+    if(partidas[i].id == id_partida){
+        partidas[i].estatus = "FINALIZO";
+        for (var i = 0; i < usuariosLista.length ; i++) {
+          let options = {
+              method: "PUT",
+              uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/cambiarestatuspartida", 
+              resolveWithFullResponse: true,
+              json: true,
+              body: {
+                  "id":id_partida,
+                  "estatus":estatus
+              }
+          }
+          console.log(options.body);
+          rp(options)
+              .then(response => {
+                  console.log("pasamos la info para el siguiente");
+              })
+              .catch(e => {
+                console.log("Error uniendose a la partida del domino"+e );
+              });
         }
     }
-    console.log("9: ");
-    console.log(options.body);
-    rp(options)
-        .then(response => {
-            console.log("pasamos la info para el siguiente");
-        })
-        .catch(e => {
-          console.log("Error haciendo cambiar estatus de la aprtida del domino" );
-        });
-  } 
+  }
 }
 
 //esta funcion es ejecutada para que el nodo sepa que tiene que actualizar el estatus de la partida
 app.put("/cambiarestatuspartida", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["id", "estatus"]);
+  for(var i=0; i< partidas.length; i++)
+    if(partidas[i].id == body.id) 
+      partidas[i].estatus = body.estatus;
+
+  res.json({ status: "ok", message: "ok"});
+});
+
+
+//esta funcion es ejecutada para que el nodo sepa que tiene que actualizar el estatus de la partida
+app.put("/JugadorAbandonaPartida", urlencodedParser, (req, res) => {
+  let body = _.pick(req.body, ["id", "estatus"]);
   try {
-    partidas[body.id].estatus= body.estatus;
-    res.json({ status: "success", message: body});
+    Abandonar(body.id, body.estatus);
+    res.json({ status: "correcto", message: "finalizado la partida"});
   }
   catch(error) {
       console.error(error);
       res.json({ status: "error", message: "no se encontro esa id para cabiar el estatus"});
   }
 });
+
 
 //manejar juego
 function jugar(ip,id,ficha,puerto){

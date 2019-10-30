@@ -76,3 +76,11 @@ Realizar jugada es al endpoint /realizarJugada haciendo un POST se deben pasar p
 	
 }
 se debe pasar la ip correspondiente al jugador que tiene el turno en ese momento
+
+
+
+PUT /JugadorAbandonaPartida  este es cuando un jugador se quiere salir de una partida
+{
+  "id":0,
+  "estatus": "FiNALIZO"
+}
