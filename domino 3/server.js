@@ -18,55 +18,29 @@ app.use(
 );
 app.use(bodyParser.json());
 
-
-//funcion global donde esta el usuario , TODO hacerlo con una base de datos
+//funcione globales
+//TODO hacerlo con una base de datos
 let YO= {
           name:"herick",
           numeroplayer:1,
           port: 10003,
-          url:"localhost" // esto se actuliza segun el POST registrarusuario
+          url:"localhost" 
         }; 
 
-//ESte post funciona para registrar la informacion de manera local en el servidor 
-//del nuevo usuario lo que se le pide es:
-/*{
-    "name":"herick",
-    "port": 10001,
-    "url":"localhost" //poner url privada en vez de localhost
-  };*/
-//TODO hacer que la ip de uno mismo sea automatico y no sea por parametro
-app.post("/registrarusuario", urlencodedParser, (req, res) => {
-  let body = _.pick(req.body, ["name","port","url"]);
-  console.log("4 :");
-  console.log(body);
-  YO.name = body.name;
-  YO.port = body.port;
-  YO.url = body.url;
-  res.json({ status: "success", message: body});
-});
-
-//get para ver los status 
-// el numero de player logre que se hiciera automatico , genial !
-app.get("/probando", urlencodedParser, (req, res) => {
-  console.log("Yo soy el jugador : "+YO.numeroplayer);
-
-  res.json({ status: "success", message: usuariosLista });
-});
+let partidas=[] 
 
 
-//variable global donde estaran todas las partidas guardadas en el servidor
-let partidas=[] //TODO crear clase partida y clase jugador para saber las fichas que tienen 
-
-//clase partida TODO moverla de aqui
+//clase partida 
+//TODO moverla de aqui
 class Partida{
   constructor (){
     this.id = -1;
     this.ipjugadorCreadorDeLaPartida = "";  
-    this.turno_jugador= 0;
+    this.portjugadorCreadorDeLaPartida = "";  
+    this.turno_jugador= 1;
     this.jugador1 = {ip : "" , fichas : [] };
     this.jugador2 = {ip : "" , fichas : [] };
     this.estatus= "ESPERA";
-    this.jugadoresEnEstaPartida = 0;
     this.ganador = "";
     this.fichas_jugadas=[];
     this.fichas_partida=["0:0","0:1","0:2","0:3","0:4","0:5","0:6",
@@ -77,36 +51,58 @@ class Partida{
     "5:5","5:6",
     "6:6"]
   }
+  //funcion que te permite llenar las fichas del jugador 1 y del jugador 2 
   llenarfichas(){
     let lista_fichasrandom=[]
     var ficha=-1
-  while (this.fichas_partida.length>0 && lista_fichasrandom.length<14) { 
-    ficha =(Math.floor(Math.random() * ((this.fichas_partida.length-1) - 0)) + 0);
-    lista_fichasrandom.push(this.fichas_partida[ficha])
-    this.fichas_partida.splice(ficha,1)
-  }
+    while (this.fichas_partida.length>0 && lista_fichasrandom.length<14) { 
+      ficha =(Math.floor(Math.random() * ((this.fichas_partida.length-1) - 0)) + 0);
+      lista_fichasrandom.push(this.fichas_partida[ficha])
+      this.fichas_partida.splice(ficha,1)
+    }
     return lista_fichasrandom
-  
+  }
 }
-}
-//metodo post para crear la partida , este es el que se hace del angular al node para crear la partida
-// cuando se crea una partida 
-//TODO el que crea la partida va a repartir las fichas
 
-//en el psotman mandar: 
-/*{
-  "id" : "localhost"
-}*/
-//TODO al agregar un jugador al juego tambien que se le traiga todas las partidas que esten
+
+
+
+// ENDPOINT:
+
+//ESte post funciona para registrar la informacion de manera local en el servidor 
+//del nuevo usuario lo que se le pide es:
+//TODO hacer que la ip de uno mismo sea automatico y no sea por parametro
+app.post("/registrarusuario", urlencodedParser, (req, res) => {
+  let body = _.pick(req.body, ["name","port","url"]);
+  console.log("POST /registrarusuario:");
+  console.log(body);
+  YO.name = body.name;
+  YO.port = body.port;
+  YO.url = body.url;
+  res.json({ status: "success", message: body});
+});
+
+//TODO quitar este get 
+//get para ver los status 
+// el numero de player logre que se hiciera automatico , genial !
+app.get("/jugadores", urlencodedParser, (req, res) => {
+  console.log(" GET /jugadores:");
+  console.log("Yo soy el jugador : "+YO.numeroplayer);
+  console.log(usuariosLista);
+  res.json({ status: "success", message: usuariosLista });
+});
+
+// post para crear la partida, lo ejecuta angular
 app.post("/crearpartida", urlencodedParser, (req, res) => {
   let partida = new Partida();
-  //TODO llenar las fichas 
   partida.ipjugadorCreadorDeLaPartida = YO.url;
+  partida.portjugadorCreadorDeLaPartida = YO.port;
   partida.id = partidas.length;
   partida.jugador1.fichas=partida.llenarfichas()
   partida.jugador2.fichas=partida.llenarfichas()
   partida.fichas_partida=[]
   partidas.push(partida);
+  console.log("POST /crearpartida");
   for (var i = 0; i < usuariosLista.length ; i++) {
     let options = {
         method: "POST",
@@ -115,20 +111,17 @@ app.post("/crearpartida", urlencodedParser, (req, res) => {
         json: true,
         body: {partida}
     }
-    console.log("6: ");
     console.log(options.body);
     rp(options)
         .then(response => {
-            console.log("pasamos la info para el siguiente");
+            console.log("pasamos la info a los demas");
         })
         .catch(e => {
-          console.log("Error haciendo la creaciacion de la aprtida del domino" );
+          console.log("Error haciendo la creacion de la aprtida del domino" );
         });
   }
   res.json({ status: "success", message: partida});
 });
-
-
 
 //este metodo ocurre para que todos los node puedan tener este nueva partida guardada
 app.post("/crearpartidaBackend", urlencodedParser, (req, res) => {
@@ -141,19 +134,19 @@ app.post("/crearpartidaBackend", urlencodedParser, (req, res) => {
   res.json({ status: "success", message: body});
 });
 
+//metodo que pinta todo en el angular
 app.get("/partidas", urlencodedParser, (req, res) => {
   console.log(partidas);
-
   res.json({ status: "success", message: partidas });
 });
 
 //unirse a las partidas
+//TODO poner lo que el unirse a la partida lo haga el nodo que creador de la partida
 app.post("/unirsepartida", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["partida"]);
   //ciclo encargado de actualizar localmente la partida con el nodo que se quiere unir a ella
   for (var i = 0; i< partidas.length; i++){
-    if(partidas[i].estatus!="CERRADO"){
-    if(body.partida.id == partidas[i].id)
+    if((body.partida.id == partidas[i].id) && (partidas[i].estatus=="ESPERA")){
       if(partidas[i].jugador1.ip== "")
         partidas[i].jugador1.ip=body.partida.port //TODO cambiar port por url
       else                                        //recorar que se pasa por el postman como port
@@ -188,26 +181,25 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
           console.log("Error uniendose a la partida del domino"+e );
         });
   }
-  res.json({ status: "success", message: body});
+  res.json({ status: "success", message: "correcto"});
 });
 
 //este metodo ocurre para que todos los node puedan tener este nueva partida guardada
 app.put("/unirsepartidaBackend", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["partida"]);
   for (var i = 0; i< partidas.length; i++){
-    if(partidas[i].estatus!="CERRADO"){
-    if(body.partida.id == partidas[i].id)
+    if((body.partida.id == partidas[i].id) && (partidas[i].estatus=="ESPERA")){
       if(partidas[i].jugador1.ip== "")
         partidas[i].jugador1.ip=body.partida.port //TODO poner url en vez de port 
       else 
       if(partidas[i].jugador2.ip== ""){
         if(partidas[i].jugador1.ip != body.partida.port){ //TODO cambiar port por url
           partidas[i].jugador2.ip=body.partida.port      //TODO cambiar port por url
-          partidas[i].estatus="CERRADO"               // TOdO interar el iniciarpartida aqui
+          partidas[i].estatus="CERRADO"              
         }
       }       
+    }
   }
- }
   res.json({ status: "success", message: body});
 });
 
@@ -215,7 +207,7 @@ app.put("/unirsepartidaBackend", urlencodedParser, (req, res) => {
 //esta es una funcion que se inicia automaticamente despues de hacerse un unir partida 
 //y que el que se haya unido sea el jugador
 //lo que hace es mandarle a todas a setear el valor del estatus 
-//TODO acoplar esta funcion en el post unise a la partida 
+//TODO acoplar esta funcion en el post unise a la partida o borrarla
 function iniciarPartida(id_partida) {
   partidas[id_partida].estatus= "CERRADO";
   let idP = id_partida;
@@ -255,12 +247,10 @@ app.put("/cambiarestatuspartida", urlencodedParser, (req, res) => {
   }
 });
 
+//manejar juego
 function jugar(ip,id,ficha,puerto){
   function verificarigualdad(ficha,tablero){
-    if(ficha== tablero)
-    return true
-    else
-    return false
+    return (ficha == tablero) ? true : false ;
   }
 
   let existe=-1;
@@ -284,6 +274,8 @@ function jugar(ip,id,ficha,puerto){
                 //quito la pieza que agregue
                 partidas[i].jugador1.fichas.splice(existe,1)
                 partidas[i].turno_jugador=2
+                console.log("ENTrE EN la condicion de vacio")
+                console.log(" numero de fichas:: "+partidas[i].fichas_jugadas.length)
               }
             
             //validaciones en el caso de que el tablero tenga fiichas
@@ -398,7 +390,8 @@ function jugar(ip,id,ficha,puerto){
 
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
-  jugar(body.ip,body.id,body.ficha)
+  jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
+  
   //ciclo encargado de replicar la informacion a los demas nodos
   for (var i = 0; i < usuariosLista.length ; i++) {
     let options = {
@@ -412,7 +405,6 @@ app.post("/realizarJugada", urlencodedParser, (req, res) => {
             "ficha":body.ficha
         }
     }
-
     console.log(options.body);
     rp(options)
         .then(response => {
@@ -426,25 +418,14 @@ app.post("/realizarJugada", urlencodedParser, (req, res) => {
   res.json({ status: "success", message: body});
 });
 
-
 app.put("/realizarjugadaBackend", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
- jugar(body.ip,body.id,body.ficha)
-res.json({ status: "success", message: "correcto"});
+  jugar(body.ip,body.id,body.ficha) 
+  res.json({ status: "success", message: "correcto"});
 });
 
 //new player lo vamos a utilizar para que los demas node.js sepan cuando un usuario se conecta a la red
 //esto va hacer despues del login en la aplicacion angular
-/*JSON que vamos a mandar:
-{
-  "newplayer": {
-          "name":"herick",
-          "numeroplayer":1,
-          "port": 10001,
-          "url":"192.168.1.1"
-        }
-}*/
-//endpoints
 //esta variable es utilizada la primera vez que un nodo quiere comenzar a jugar
 //y es para que todas las demas maquinas sepan que hay un nuevo jugador
 
@@ -526,7 +507,7 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
             console.log("pasamos la info para el siguiente");
           })
           .catch(e => {
-            console.log("Error haciendo la creaciacion de la aprtida del domino" );
+            console.log("Error haciendo la creaciacion de la partida del domino" );
           });
       }
 

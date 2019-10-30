@@ -57,7 +57,7 @@ despues de creadas las partidas , haremos el newplayer de 10003 , y si despues d
 hacemos el GET /partidas , veremos las partidas creadas , y si en el 10003 ejecutamos de nuevo el post de crear partida , se actualizaran en los otros dos nodos
 
 para el unirse partida
- localhost:10001/unirsepartida
+ localhost:10002/unirsepartida
 luego de que la partida este creada se hace un Post a cualquier nodo indicandole por body lo siguiente
 {
 	"partida":{
