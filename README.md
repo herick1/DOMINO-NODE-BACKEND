@@ -62,6 +62,7 @@ luego de que la partida este creada se hace un Post a cualquier nodo indicandole
 {
 	"partida":{
 	"id": 0,
+  "url": "localhost",
 	"port": 10002
 	}
 }

@@ -36,9 +36,9 @@ class Partida{
   constructor (){
     this.id = -1;
     this.ipjugadorCreadorDeLaPartida = "";  
-    this.portjugadorCreadorDeLaPartida = "";  
+    this.portjugadorCreadorDeLaPartida;  
     this.turno_jugador= 1;
-    this.jugador1 = {ip : "" , fichas : [] };
+    this.jugador1 = {ip : "", fichas : [] };
     this.jugador2 = {ip : "" , fichas : [] };
     this.estatus= "ESPERA";
     this.ganador = "";
@@ -141,47 +141,90 @@ app.get("/partidas", urlencodedParser, (req, res) => {
 });
 
 //unirse a las partidas
-//TODO poner lo que el unirse a la partida lo haga el nodo que creador de la partida
 app.post("/unirsepartida", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["partida"]);
   //ciclo encargado de actualizar localmente la partida con el nodo que se quiere unir a ella
-  for (var i = 0; i< partidas.length; i++){
-    if((body.partida.id == partidas[i].id) && (partidas[i].estatus=="ESPERA")){
-      if(partidas[i].jugador1.ip== "")
-        partidas[i].jugador1.ip=body.partida.port //TODO cambiar port por url
-      else                                        //recorar que se pasa por el postman como port
-        if(partidas[i].jugador2.ip== ""){
-          if(partidas[i].jugador1.ip != body.partida.port){ //TODO cambiar port por url 
-            partidas[i].jugador2.ip=body.partida.port
-            partidas[i].estatus="CERRADO"
+  //en el caso que yo la haya creado
+  let seUnio = false ;
+  if((YO.url == body.partida.url) && (YO.port == body.partida.port)){
+    for (var i = 0; i< partidas.length; i++){
+      if((body.partida.id == partidas[i].id) && (partidas[i].estatus=="ESPERA")){
+        if(partidas[i].jugador1.ip== ""){
+          partidas[i].jugador1.ip=body.partida.port //TODO cambiar port por url
+          seUnio = true;
+        }else                                        //recorar que se pasa por el postman como port
+          if(partidas[i].jugador2.ip== ""){
+            if(partidas[i].jugador1.ip != body.partida.port){ //TODO cambiar port por url 
+              partidas[i].jugador2.ip=body.partida.port
+              partidas[i].estatus="JUGANDO"
+              seUnio = true ;
+            }
           }
-        }
+      }
     }
-  }
-  //ciclo encargado de replicar la informacion a los demas nodos
-  for (var i = 0; i < usuariosLista.length ; i++) {
-    let options = {
-        method: "PUT",
-        uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/unirsepartidaBackend", 
-        resolveWithFullResponse: true,
-        json: true,
-        body: {
-          "partida":{
-            "id":body.partida.id,
-            "port":body.partida.port  //TODO poner url aqui en vez de port 
+    if(seUnio){
+        //ciclo encargado de replicar la informacion a los demas nodos
+        for (var i = 0; i < usuariosLista.length ; i++) {
+          let options = {
+              method: "PUT",
+              uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/unirsepartidaBackend", 
+              resolveWithFullResponse: true,
+              json: true,
+              body: {
+                "partida":{
+                  "id":body.partida.id,
+                  "url":body.partida.url,  
+                  "port":body.partida.port   
+                }
+              }
           }
+          console.log(options.body);
+          rp(options)
+              .then(response => {
+                  console.log("pasamos la info para el siguiente");
+              })
+              .catch(e => {
+                console.log("Error uniendose a la partida del domino"+e );
+              });
         }
+        res.json({ status: "success", message: "correcto"});
     }
-    console.log(options.body);
-    rp(options)
-        .then(response => {
-            console.log("pasamos la info para el siguiente");
-        })
-        .catch(e => {
-          console.log("Error uniendose a la partida del domino"+e );
-        });
+    //caso de que la partida no cumpla las condiciones
+    else{
+      res.json({ status: "success", message: "no se unio a la partida"});
+    }
+  //caso de que yo no sea el nodo que cree la partida
+  }else{
+    //busco la id de la partida para que el que creo la partida haga que los jugadores se unan 
+    for (var i = 0; i< partidas.length; i++){
+      if((body.partida.id == partidas[i].id) &&(partidas[i].estatus=="ESPERA")){
+        Seunio = true;
+        let options = {
+            method: "PUT",
+            uri: "http://"+ partidas[i].ipjugadorCreadorDeLaPartida+":" + partida[i].portjugadorCreadorDeLaPartida + "/unirsepartida", 
+            resolveWithFullResponse: true,
+            json: true,
+            body: {
+              "partida":{
+                "id":body.partida.id,
+                "url":body.partida.url,  
+                "port":body.partida.port  
+              }
+            }
+          }
+          console.log(options.body);
+          rp(options)
+              .then(response => {
+                  console.log("pasamos la info para el siguiente");
+              })
+              .catch(e => {
+                console.log("Error uniendose a la partida del domino"+e );
+              });
+          res.json({ status: "success", message: "correcto"});              
+      }
+    }
+    if(!Seunio)res.json({ status: "success", message: "no se pudo unir a la partida verifique los datos a la partida"});
   }
-  res.json({ status: "success", message: "correcto"});
 });
 
 //este metodo ocurre para que todos los node puedan tener este nueva partida guardada
@@ -190,12 +233,12 @@ app.put("/unirsepartidaBackend", urlencodedParser, (req, res) => {
   for (var i = 0; i< partidas.length; i++){
     if((body.partida.id == partidas[i].id) && (partidas[i].estatus=="ESPERA")){
       if(partidas[i].jugador1.ip== "")
-        partidas[i].jugador1.ip=body.partida.port //TODO poner url en vez de port 
+        partidas[i].jugador1.ip=body.partida.port //TODO poner  partida.url (ya el se trae la url)
       else 
       if(partidas[i].jugador2.ip== ""){
         if(partidas[i].jugador1.ip != body.partida.port){ //TODO cambiar port por url
           partidas[i].jugador2.ip=body.partida.port      //TODO cambiar port por url
-          partidas[i].estatus="CERRADO"              
+          partidas[i].estatus="JUGANDO"              
         }
       }       
     }
@@ -209,7 +252,7 @@ app.put("/unirsepartidaBackend", urlencodedParser, (req, res) => {
 //lo que hace es mandarle a todas a setear el valor del estatus 
 //TODO acoplar esta funcion en el post unise a la partida o borrarla
 function iniciarPartida(id_partida) {
-  partidas[id_partida].estatus= "CERRADO";
+  partidas[id_partida].estatus= "JUGANDO";
   let idP = id_partida;
   for (var i = 0; i < usuariosLista.length ; i++) {
     let options = {
@@ -219,7 +262,7 @@ function iniciarPartida(id_partida) {
         json: true,
         body: { 
           id : idP,
-          estatus : "CERRADO" 
+          estatus : "JUGANDO" 
         }
     }
     console.log("9: ");
@@ -260,7 +303,7 @@ function jugar(ip,id,ficha,puerto){
   let tablero= []
   //ciclo encargado de actualizar localmente la partida con las fichas jugadas
   for (var i = 0; i< partidas.length; i++){
-    if(partidas[i].estatus =="CERRADO"){
+    if(partidas[i].estatus =="JUGANDO"){
       if(id == partidas[i].id){
         if(partidas[i].turno_jugador==1){
           if(partidas[i].jugador1.ip == ip){
@@ -370,9 +413,9 @@ function jugar(ip,id,ficha,puerto){
                 else
                 if(verificarigualdad(separarficha[0],fichaderecha[1])){
                   //agrego en el tablero
-                  partidas[i].fichas_jugadas.push(ficha)
+                  partidas[i].fichas_jugadas.push(ficha);
                   //quito la pieza que agregue
-                  partidas[i].jugador2.fichas.splice(existe,1)
+                  partidas[i].jugador2.fichas.splice(existe,1);
                   partidas[i].turno_jugador=1             
                  }
 
