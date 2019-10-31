@@ -85,11 +85,11 @@ app.post("/registrarusuario", urlencodedParser, (req, res) => {
 //TODO quitar este get 
 //get para ver los status 
 // el numero de player logre que se hiciera automatico , genial !
-app.get("/jugadores", urlencodedParser, (req, res) => {
-  console.log(" GET /jugadores:");
+app.get("/jugador", urlencodedParser, (req, res) => {
+  console.log(" GET /jugador:");
   console.log("Yo soy el jugador : "+YO.numeroplayer);
-  console.log(usuariosLista);
-  res.json({ status: "success", message: usuariosLista });
+  console.log(YO);
+  res.json({ status: "success", message: YO });
 });
 
 // post para crear la partida, lo ejecuta angular
