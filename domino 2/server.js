@@ -315,6 +315,8 @@ function jugar(ip,id,ficha,puerto){
   let fichaizquierda=[]
   let fichaderecha= []
   let tablero= []
+  let volteada=""
+  let comparacion_volteada= false
   //ciclo encargado de actualizar localmente la partida con las fichas jugadas
   for (var i = 0; i< partidas.length; i++){
     if(partidas[i].estatus =="JUGANDO"){
@@ -339,38 +341,61 @@ function jugar(ip,id,ficha,puerto){
             else{
               // si solo tiene una ficha
               tablero=partidas[i].fichas_jugadas[0].split(":")
+              volteada=separarficha[1]+":"+separarficha[0]
               if (partidas[i].fichas_jugadas.length ==1){
-                if (verificarigualdad(separarficha[1],tablero[0]) ){
-                  partidas[i].fichas_jugadas.unshift(ficha)
+                comparacion_volteada=verificarigualdad(separarficha[0],tablero[0])
+                console.log("funcion volteada"+comparacion_volteada)
+                if (verificarigualdad(separarficha[1],tablero[0]) || (comparacion_volteada )){
+                  if(comparacion_volteada )
+                    partidas[i].fichas_jugadas.unshift(volteada)
+                  else
+                    partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador1.fichas.splice(existe,1)
                   partidas[i].turno_jugador=2
                 }
-                else 
-                  if(verificarigualdad(separarficha[0],tablero[1])){
+                else {
+                  comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
+                  console.log("funcion volteada por el push "+comparacion_volteada)
+                  if(verificarigualdad(separarficha[0],tablero[1]) || (comparacion_volteada)){
                     //agrego en el tablero
-                    partidas[i].fichas_jugadas.push(ficha)
+                    if(comparacion_volteada )
+                      partidas[i].fichas_jugadas.push(volteada)
+                    else
+                      partidas[i].fichas_jugadas.push(ficha)
                     //quito la pieza que agregue
                     partidas[i].jugador1.fichas.splice(existe,1)
                     partidas[i].turno_jugador=2
                   }
+                }
               }
               // caso en el que el tablero tenga mas de una ficha colocada
               else{
                 fichaizquierda=partidas[i].fichas_jugadas[0].split(":")
                 fichaderecha=partidas[i].fichas_jugadas[partidas[i].fichas_jugadas.length-1].split(":")
-                if (verificarigualdad(separarficha[1],fichaizquierda[0])){
-                  partidas[i].fichas_jugadas.unshift(ficha)
+                comparacion_volteada=verificarigualdad(separarficha[0],fichaizquierda[0])
+                if (verificarigualdad(separarficha[1],fichaizquierda[0])|| comparacion_volteada ){
+                  if(comparacion_volteada)
+                    partidas[i].fichas_jugadas.unshift(volteada)
+                  else
+                    partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador1.fichas.splice(existe,1)   
                   partidas[i].turno_jugador=2
                 }
-                else
-                if(verificarigualdad(separarficha[0],fichaderecha[1])){
-                  //agrego en el tablero
-                  partidas[i].fichas_jugadas.push(ficha)
-                  //quito la pieza que agregue
-                  partidas[i].jugador1.fichas.splice(existe,1)
-                  partidas[i].turno_jugador=2
+                else{
+                  comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
+                  if(verificarigualdad(separarficha[0],fichaderecha[1])|| comparacion_volteada){
+                    //agrego en el tablero
+                    if(comparacion_volteada)
+                      partidas[i].fichas_jugadas.push(volteada)
+                    else
+                      partidas[i].fichas_jugadas.push(ficha)
+                    //quito la pieza que agregue
+                    partidas[i].jugador1.fichas.splice(existe,1)
+                    partidas[i].turno_jugador=2
+                  }
+
                 }
+                
 
               }
               
@@ -400,38 +425,61 @@ function jugar(ip,id,ficha,puerto){
               else{
                 // si solo tiene una ficha
                 tablero=partidas[i].fichas_jugadas[0].split(":")
+                volteada=separarficha[1]+":"+separarficha[0]
+                console.log("ficha volteada: "+volteada)
                 if (partidas[i].fichas_jugadas.length ==1){
-                  if (verificarigualdad(separarficha[1],tablero[0]) ){
-                    partidas[i].fichas_jugadas.unshift(ficha)
+                  comparacion_volteada=verificarigualdad(separarficha[0],tablero[0])
+                  console.log("funcion volteada"+comparacion_volteada)
+                  if (verificarigualdad(separarficha[1],tablero[0]) ||( comparacion_volteada )){
+                    if(comparacion_volteada){
+                      partidas[i].fichas_jugadas.unshift(volteada)
+                    }
+                    else{
+                      partidas[i].fichas_jugadas.unshift(ficha)
+                    }
                     partidas[i].jugador2.fichas.splice(existe,1)
                     partidas[i].turno_jugador=1
                   }
-                  else 
-                    if(verificarigualdad(separarficha[0],tablero[1])){
+                  else{
+                    comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
+                    console.log("funcion volteada por el push "+comparacion_volteada)
+                    if(verificarigualdad(separarficha[0],tablero[1]) || (comparacion_volteada )){
                       //agrego en el tablero
-                      partidas[i].fichas_jugadas.push(ficha)
+                      if(comparacion_volteada )
+                        partidas[i].fichas_jugadas.push(volteada)
+                      else
+                        partidas[i].fichas_jugadas.push(ficha)
                       //quito la pieza que agregue
                       partidas[i].jugador2.fichas.splice(existe,1)
                       partidas[i].turno_jugador=1
                     }
+                  }
+                  
                 }
               // caso en el que el tablero tenga mas de una ficha colocada
               else{
                 fichaizquierda=partidas[i].fichas_jugadas[0].split(":")
                 fichaderecha=partidas[i].fichas_jugadas[partidas[i].fichas_jugadas.length-1].split(":")
-                if (verificarigualdad(separarficha[1],fichaizquierda[0])){
-                  partidas[i].fichas_jugadas.unshift(ficha)
+                comparacion_volteada=verificarigualdad(separarficha[0],fichaizquierda[0])
+                if (verificarigualdad(separarficha[1],fichaizquierda[0])|| comparacion_volteada){
+                  if(comparacion_volteada)
+                    partidas[i].fichas_jugadas.unshift(volteada)
+                  else 
+                    partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador2.fichas.splice(existe,1)   
                   partidas[i].turno_jugador=1
                 }
-                else
-                if(verificarigualdad(separarficha[0],fichaderecha[1])){
-                  //agrego en el tablero
-                  partidas[i].fichas_jugadas.push(ficha);
-                  //quito la pieza que agregue
-                  partidas[i].jugador2.fichas.splice(existe,1);
-                  partidas[i].turno_jugador=1             
-                 }
+                else{
+                  comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
+                  if(verificarigualdad(separarficha[0],fichaderecha[1])){
+                    //agrego en el tablero
+                    partidas[i].fichas_jugadas.push(ficha);
+                    //quito la pieza que agregue
+                    partidas[i].jugador2.fichas.splice(existe,1);
+                    partidas[i].turno_jugador=1             
+                   }
+                }
+               
 
               }
               
@@ -444,6 +492,7 @@ function jugar(ip,id,ficha,puerto){
     }
   
 }
+
 
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
