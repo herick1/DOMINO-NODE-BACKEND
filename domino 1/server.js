@@ -91,7 +91,10 @@ app.get("/jugadores", urlencodedParser, (req, res) => {
   console.log(usuariosLista);
   res.json({ status: "success", message: usuariosLista });
 });
-
+// el numero de player logre que se hiciera automatico , genial !
+app.get("/probando", urlencodedParser, (req, res) => {
+  res.status(500).send({ status: "500", message: "ERROr mandando desde back" });
+});
 // post para crear la partida, lo ejecuta angular
 app.post("/crearpartida", urlencodedParser, (req, res) => {
   let partida = new Partida();
@@ -310,6 +313,7 @@ function jugar(ip,id,ficha,puerto){
     return (ficha == tablero) ? true : false ;
   }
 
+
   let existe=-1;
   let separarficha=[]
   let fichaizquierda=[]
@@ -332,6 +336,10 @@ function jugar(ip,id,ficha,puerto){
                 partidas[i].fichas_jugadas.push(ficha)
                 //quito la pieza que agregue
                 partidas[i].jugador1.fichas.splice(existe,1)
+                if (partidas[i].jugador1.fichas.length ==0){
+                  throw 'GANO'
+                }
+                  
                 partidas[i].turno_jugador=2
                 console.log("ENTrE EN la condicion de vacio")
                 console.log(" numero de fichas:: "+partidas[i].fichas_jugadas.length)
@@ -404,8 +412,9 @@ function jugar(ip,id,ficha,puerto){
         }
         
       }
+      else  throw 'IpNovalido'
     }
-        }
+        } else throw 'PartidaNoValida'
         //MANEJO DE JUGADOR 2
         if(partidas[i].turno_jugador==2){
           if(partidas[i].jugador2.ip==ip){
@@ -495,8 +504,17 @@ function jugar(ip,id,ficha,puerto){
 
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
-  jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
-  
+  try {
+    jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
+  } 
+  catch(err){
+    if(err=="PartidaNoValida")
+    res.json({ status: "success", message: "PARTIDA NO EXISTE"});
+    if(err=="IpNovalido")
+    res.json({ status: "success", message: "IP NO VALIDO"});
+    if(err== "GANO")
+    res.json({ status: "success", message: "GANO"});
+  }
   //ciclo encargado de replicar la informacion a los demas nodos
   for (var i = 0; i < usuariosLista.length ; i++) {
     let options = {
