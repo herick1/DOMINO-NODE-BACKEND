@@ -142,6 +142,8 @@ app.get("/partidas", urlencodedParser, (req, res) => {
 
 //unirse a las partidas
 app.post("/unirsepartida", urlencodedParser, (req, res) => {
+  console.log("hoalaa" )
+    console.log(req.body )
   let body = _.pick(req.body, ["partida"]);
   //ciclo encargado de actualizar localmente la partida con el nodo que se quiere unir a ella
   //en el caso que yo la haya creado
@@ -275,6 +277,7 @@ function Abandonar(id_partida, estatus) {
                 console.log("Error uniendose a la partida del domino"+e );
               });
         }
+        break;
     }
   }
 }
@@ -283,9 +286,10 @@ function Abandonar(id_partida, estatus) {
 app.put("/cambiarestatuspartida", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["id", "estatus"]);
   for(var i=0; i< partidas.length; i++)
-    if(partidas[i].id == body.id) 
+    if(partidas[i].id == body.id){ 
       partidas[i].estatus = body.estatus;
-
+      break;
+    }
   res.json({ status: "ok", message: "ok"});
 });
 
@@ -492,6 +496,7 @@ function jugar(ip,id,ficha,puerto){
     }
   
 }
+
 
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);

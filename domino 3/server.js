@@ -275,6 +275,7 @@ function Abandonar(id_partida, estatus) {
                 console.log("Error uniendose a la partida del domino"+e );
               });
         }
+        break;
     }
   }
 }
