@@ -19,6 +19,7 @@ app.use(
 app.use(bodyParser.json());
 
 //funcione globales
+//
 //TODO hacerlo con una base de datos
 let YO= {
           name:"herick",
