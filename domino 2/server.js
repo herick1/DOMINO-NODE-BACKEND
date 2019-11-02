@@ -305,6 +305,77 @@ app.put("/JugadorAbandonaPartida", urlencodedParser, (req, res) => {
 
 
 //manejar juego
+//devuelvo true si el jugador pasa y falso si no pasa
+// se le debe pasar el numero de jugador a analizar y el id de la partida 
+function pasoturno(jugador, id_partida){
+  let separar_ficha_tablero=[]
+  let separar_ficha_tablero2=[]
+  let separar_ficha_jugador=[]
+  for (var i = 0; i< partidas.length; i++){
+    if(partidas[i].id ==id_partida){
+      if(partidas[i].fichas_jugadas.length ==1){//si hay una sola ficha solo se analiza si se puede colocar en esa
+        separar_ficha_tablero=partidas[i].fichas_jugadas[0].split(":")
+        // en caso de que sea jugador 1 el jugador a analizar 
+        if(jugador ==1){
+          for(var y=0; y<partidas[i].jugador1.fichas.length; y++){
+            separar_ficha_jugador=partidas[i].jugador1.fichas[y].split(":")
+            //validacion  ver si es posible que juegue
+            if(separar_ficha_jugador[0]==separar_ficha_tablero[0] || separar_ficha_jugador[0]==separar_ficha_tablero[1] )
+              return false
+            else 
+              if( separar_ficha_jugador[1]==separar_ficha_tablero[0] || separar_ficha_jugador[1]==separar_ficha_tablero[1])
+                return false
+          }  
+        }
+        // en caso de que sea jugador 2 el jugador a analizar 
+        else{
+          for(var y=0; y<partidas[i].jugador2.fichas.length; y++){
+            separar_ficha_jugador=partidas[i].jugador2.fichas[y].split(":")
+            if(separar_ficha_jugador[0]==separar_ficha_tablero[0] || separar_ficha_jugador[0]==separar_ficha_tablero[1] )
+              return false
+            else 
+              if( separar_ficha_jugador[1]==separar_ficha_tablero[0] || separar_ficha_jugador[1]==separar_ficha_tablero[1])
+                return false
+          } 
+
+        }
+          
+        
+      }
+      else{ //validacion a ver si en el tablero hay mas de 1 ficha lo que implica analizar 2 lados
+        if(partidas[i].fichas_jugadas.length >1){
+          separar_ficha_tablero=partidas[i].fichas_jugadas[0].split(":")
+          separar_ficha_tablero2=partidas[i].fichas_jugadas[partidas[i].fichas_jugadas.length-1].split(":")
+          if(jugador ==1){
+            for(var y=0; y<partidas[i].jugador1.fichas.length; y++){
+              separar_ficha_jugador=partidas[i].jugador1.fichas[y].split(":")
+              if(separar_ficha_jugador[0]==separar_ficha_tablero[0] || separar_ficha_jugador[1]==separar_ficha_tablero[0] )
+                return false
+              else 
+                if( separar_ficha_jugador[0]==separar_ficha_tablero2[1] || separar_ficha_jugador[1]==separar_ficha_tablero2[1])
+                  return false 
+            }
+          }
+          else{
+            for(var y=0; y<partidas[i].jugador2.fichas.length; y++){
+              separar_ficha_jugador=partidas[i].jugador2.fichas[y].split(":")
+              if(separar_ficha_jugador[0]==separar_ficha_tablero[0] || separar_ficha_jugador[1]==separar_ficha_tablero[0] )
+                return false
+              else 
+                if( separar_ficha_jugador[0]==separar_ficha_tablero2[1] || separar_ficha_jugador[1]==separar_ficha_tablero2[1])
+                 return false 
+            }
+          }
+            
+        
+        }
+      }
+        return true;
+    }
+
+  }
+}
+
 function jugar(ip,id,ficha,puerto){
   function verificarigualdad(ficha,tablero){
     return (ficha == tablero) ? true : false ;
@@ -332,7 +403,11 @@ function jugar(ip,id,ficha,puerto){
                 partidas[i].fichas_jugadas.push(ficha)
                 //quito la pieza que agregue
                 partidas[i].jugador1.fichas.splice(existe,1)
-                partidas[i].turno_jugador=2
+                if (partidas[i].jugador1.fichas.length ==0){
+                  throw 'GANO'
+                }
+                if(!pasoturno(2,id))
+                  partidas[i].turno_jugador=2
                 console.log("ENTrE EN la condicion de vacio")
                 console.log(" numero de fichas:: "+partidas[i].fichas_jugadas.length)
               }
@@ -351,7 +426,8 @@ function jugar(ip,id,ficha,puerto){
                   else
                     partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador1.fichas.splice(existe,1)
-                  partidas[i].turno_jugador=2
+                  if(!pasoturno(2,id))
+                    partidas[i].turno_jugador=2
                 }
                 else {
                   comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
@@ -364,7 +440,8 @@ function jugar(ip,id,ficha,puerto){
                       partidas[i].fichas_jugadas.push(ficha)
                     //quito la pieza que agregue
                     partidas[i].jugador1.fichas.splice(existe,1)
-                    partidas[i].turno_jugador=2
+                    if(!pasoturno(2,id))
+                      partidas[i].turno_jugador=2
                   }
                 }
               }
@@ -378,8 +455,9 @@ function jugar(ip,id,ficha,puerto){
                     partidas[i].fichas_jugadas.unshift(volteada)
                   else
                     partidas[i].fichas_jugadas.unshift(ficha)
-                  partidas[i].jugador1.fichas.splice(existe,1)   
-                  partidas[i].turno_jugador=2
+                  partidas[i].jugador1.fichas.splice(existe,1)
+                  if(!pasoturno(2,id))   
+                    partidas[i].turno_jugador=2
                 }
                 else{
                   comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
@@ -391,7 +469,8 @@ function jugar(ip,id,ficha,puerto){
                       partidas[i].fichas_jugadas.push(ficha)
                     //quito la pieza que agregue
                     partidas[i].jugador1.fichas.splice(existe,1)
-                    partidas[i].turno_jugador=2
+                    if(!pasoturno(2,id))
+                      partidas[i].turno_jugador=2
                   }
 
                 }
@@ -404,8 +483,9 @@ function jugar(ip,id,ficha,puerto){
         }
         
       }
+      else  throw 'IpNovalido'
     }
-        }
+        } else throw 'PartidaNoValida'
         //MANEJO DE JUGADOR 2
         if(partidas[i].turno_jugador==2){
           if(partidas[i].jugador2.ip==ip){
@@ -418,7 +498,8 @@ function jugar(ip,id,ficha,puerto){
                 partidas[i].fichas_jugadas.push(ficha)
                 //quito la pieza que agregue
                 partidas[i].jugador2.fichas.splice(existe,1)
-                partidas[i].turno_jugador=1
+                if(!pasoturno(1,id))
+                  partidas[i].turno_jugador=1
               }
             
                //validaciones en el caso de que el tablero tenga fiichas
@@ -438,7 +519,8 @@ function jugar(ip,id,ficha,puerto){
                       partidas[i].fichas_jugadas.unshift(ficha)
                     }
                     partidas[i].jugador2.fichas.splice(existe,1)
-                    partidas[i].turno_jugador=1
+                    if(!pasoturno(1,id))
+                      partidas[i].turno_jugador=1
                   }
                   else{
                     comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
@@ -451,7 +533,8 @@ function jugar(ip,id,ficha,puerto){
                         partidas[i].fichas_jugadas.push(ficha)
                       //quito la pieza que agregue
                       partidas[i].jugador2.fichas.splice(existe,1)
-                      partidas[i].turno_jugador=1
+                      if(!pasoturno(1,id))
+                        partidas[i].turno_jugador=1
                     }
                   }
                   
@@ -467,7 +550,8 @@ function jugar(ip,id,ficha,puerto){
                   else 
                     partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador2.fichas.splice(existe,1)   
-                  partidas[i].turno_jugador=1
+                  if(!pasoturno(1,id))
+                    partidas[i].turno_jugador=1
                 }
                 else{
                   comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
@@ -476,7 +560,8 @@ function jugar(ip,id,ficha,puerto){
                     partidas[i].fichas_jugadas.push(ficha);
                     //quito la pieza que agregue
                     partidas[i].jugador2.fichas.splice(existe,1);
-                    partidas[i].turno_jugador=1             
+                    if(!pasoturno(1,id))
+                      partidas[i].turno_jugador=1             
                    }
                 }
                
