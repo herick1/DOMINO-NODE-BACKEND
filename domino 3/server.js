@@ -307,6 +307,7 @@ app.put("/JugadorAbandonaPartida", urlencodedParser, (req, res) => {
 
 //manejar juego
 //devuelvo true si el jugador pasa y falso si no pasa
+// se le debe pasar el numero de jugador a analizar y el id de la partida 
 function pasoturno(jugador, id_partida){
   let separar_ficha_tablero=[]
   let separar_ficha_tablero2=[]
@@ -577,7 +578,6 @@ function jugar(ip,id,ficha,puerto){
     }
   
 }
-
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
   jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas

@@ -309,7 +309,6 @@ app.put("/JugadorAbandonaPartida", urlencodedParser, (req, res) => {
   }
 });
 
-
 //manejar juego
 //devuelvo true si el jugador pasa y falso si no pasa
 // se le debe pasar el numero de jugador a analizar y el id de la partida 
@@ -564,10 +563,10 @@ function jugar(ip,id,ficha,puerto){
                   if(verificarigualdad(separarficha[0],fichaderecha[1])){
                     //agrego en el tablero
                     partidas[i].fichas_jugadas.push(ficha);
-                    //quito la pieza que agregue
+                    //quito la pieza que agregue 
                     partidas[i].jugador2.fichas.splice(existe,1);
                     if(!pasoturno(1,id))
-                      partidas[i].turno_jugador=1             
+                      partidas[i].turno_jugador=1              
                    }
                 }
                
@@ -583,6 +582,7 @@ function jugar(ip,id,ficha,puerto){
     }
   
 }
+
 
 
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
