@@ -85,11 +85,11 @@ app.post("/registrarusuario", urlencodedParser, (req, res) => {
 //TODO quitar este get 
 //get para ver los status 
 // el numero de player logre que se hiciera automatico , genial !
-app.get("/jugadores", urlencodedParser, (req, res) => {
-  console.log(" GET /jugadores:");
+app.get("/jugador", urlencodedParser, (req, res) => {
+  console.log(" GET /jugador:");
   console.log("Yo soy el jugador : "+YO.numeroplayer);
-  console.log(usuariosLista);
-  res.json({ status: "success", message: usuariosLista });
+  console.log(YO);
+  res.json({ status: "success", message: YO });
 });
 // el numero de player logre que se hiciera automatico , genial !
 app.get("/probando", urlencodedParser, (req, res) => {
@@ -145,6 +145,8 @@ app.get("/partidas", urlencodedParser, (req, res) => {
 
 //unirse a las partidas
 app.post("/unirsepartida", urlencodedParser, (req, res) => {
+  console.log("hoalaa" )
+    console.log(req.body )
   let body = _.pick(req.body, ["partida"]);
   //ciclo encargado de actualizar localmente la partida con el nodo que se quiere unir a ella
   //en el caso que yo la haya creado
@@ -278,6 +280,7 @@ function Abandonar(id_partida, estatus) {
                 console.log("Error uniendose a la partida del domino"+e );
               });
         }
+        break;
     }
   }
 }
@@ -286,9 +289,10 @@ function Abandonar(id_partida, estatus) {
 app.put("/cambiarestatuspartida", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["id", "estatus"]);
   for(var i=0; i< partidas.length; i++)
-    if(partidas[i].id == body.id) 
+    if(partidas[i].id == body.id){ 
       partidas[i].estatus = body.estatus;
-
+      break;
+    }
   res.json({ status: "ok", message: "ok"});
 });
 
@@ -501,6 +505,7 @@ function jugar(ip,id,ficha,puerto){
     }
   
 }
+
 
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
