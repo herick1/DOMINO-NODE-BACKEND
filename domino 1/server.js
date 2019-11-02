@@ -82,7 +82,6 @@ app.post("/registrarusuario", urlencodedParser, (req, res) => {
   res.json({ status: "success", message: body});
 });
 
-//TODO quitar este get 
 //get para ver los status 
 // el numero de player logre que se hiciera automatico , genial !
 app.get("/jugador", urlencodedParser, (req, res) => {
@@ -148,7 +147,7 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
   //ciclo encargado de actualizar localmente la partida con el nodo que se quiere unir a ella
   //en el caso que yo la haya creado
   let seUnio = false ;
-  if((YO.url == body.partida.url) && (YO.port == body.partida.port)){
+  if((YO.url == body.partida.url) && (YO.port == body.partida.port)){ //TODOlo de port
     for (var i = 0; i< partidas.length; i++){
       if((body.partida.id == partidas[i].id) && (partidas[i].estatus=="ESPERA")){
         if(partidas[i].jugador1.ip== ""){
@@ -157,7 +156,7 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
         }else                                        //recorar que se pasa por el postman como port
           if(partidas[i].jugador2.ip== ""){
             if(partidas[i].jugador1.ip != body.partida.port){ //TODO cambiar port por url 
-              partidas[i].jugador2.ip=body.partida.port
+              partidas[i].jugador2.ip=body.partida.port //TODO cambiar port por url 
               partidas[i].estatus="JUGANDO"
               seUnio = true ;
             }
