@@ -66,7 +66,6 @@ class Partida{
 
 
 
-
 // ENDPOINT:
 
 //ESte post funciona para registrar la informacion de manera local en el servidor 
@@ -90,7 +89,10 @@ app.get("/jugador", urlencodedParser, (req, res) => {
   console.log(YO);
   res.json({ status: "success", message: YO });
 });
-
+// el numero de player logre que se hiciera automatico , genial !
+app.get("/probando", urlencodedParser, (req, res) => {
+  res.status(500).send({ status: "500", message: "ERROr mandando desde back" });
+});
 // post para crear la partida, lo ejecuta angular
 app.post("/crearpartida", urlencodedParser, (req, res) => {
   let partida = new Partida();
@@ -306,8 +308,78 @@ app.put("/JugadorAbandonaPartida", urlencodedParser, (req, res) => {
   }
 });
 
-
 //manejar juego
+//devuelvo true si el jugador pasa y falso si no pasa
+// se le debe pasar el numero de jugador a analizar y el id de la partida 
+function pasoturno(jugador, id_partida){
+  let separar_ficha_tablero=[]
+  let separar_ficha_tablero2=[]
+  let separar_ficha_jugador=[]
+  for (var i = 0; i< partidas.length; i++){
+    if(partidas[i].id ==id_partida){
+      if(partidas[i].fichas_jugadas.length ==1){//si hay una sola ficha solo se analiza si se puede colocar en esa
+        separar_ficha_tablero=partidas[i].fichas_jugadas[0].split(":")
+        // en caso de que sea jugador 1 el jugador a analizar 
+        if(jugador ==1){
+          for(var y=0; y<partidas[i].jugador1.fichas.length; y++){
+            separar_ficha_jugador=partidas[i].jugador1.fichas[y].split(":")
+            //validacion  ver si es posible que juegue
+            if(separar_ficha_jugador[0]==separar_ficha_tablero[0] || separar_ficha_jugador[0]==separar_ficha_tablero[1] )
+              return false
+            else 
+              if( separar_ficha_jugador[1]==separar_ficha_tablero[0] || separar_ficha_jugador[1]==separar_ficha_tablero[1])
+                return false
+          }  
+        }
+        // en caso de que sea jugador 2 el jugador a analizar 
+        else{
+          for(var y=0; y<partidas[i].jugador2.fichas.length; y++){
+            separar_ficha_jugador=partidas[i].jugador2.fichas[y].split(":")
+            if(separar_ficha_jugador[0]==separar_ficha_tablero[0] || separar_ficha_jugador[0]==separar_ficha_tablero[1] )
+              return false
+            else 
+              if( separar_ficha_jugador[1]==separar_ficha_tablero[0] || separar_ficha_jugador[1]==separar_ficha_tablero[1])
+                return false
+          } 
+
+        }
+          
+        
+      }
+      else{ //validacion a ver si en el tablero hay mas de 1 ficha lo que implica analizar 2 lados
+        if(partidas[i].fichas_jugadas.length >1){
+          separar_ficha_tablero=partidas[i].fichas_jugadas[0].split(":")
+          separar_ficha_tablero2=partidas[i].fichas_jugadas[partidas[i].fichas_jugadas.length-1].split(":")
+          if(jugador ==1){
+            for(var y=0; y<partidas[i].jugador1.fichas.length; y++){
+              separar_ficha_jugador=partidas[i].jugador1.fichas[y].split(":")
+              if(separar_ficha_jugador[0]==separar_ficha_tablero[0] || separar_ficha_jugador[1]==separar_ficha_tablero[0] )
+                return false
+              else 
+                if( separar_ficha_jugador[0]==separar_ficha_tablero2[1] || separar_ficha_jugador[1]==separar_ficha_tablero2[1])
+                  return false 
+            }
+          }
+          else{
+            for(var y=0; y<partidas[i].jugador2.fichas.length; y++){
+              separar_ficha_jugador=partidas[i].jugador2.fichas[y].split(":")
+              if(separar_ficha_jugador[0]==separar_ficha_tablero[0] || separar_ficha_jugador[1]==separar_ficha_tablero[0] )
+                return false
+              else 
+                if( separar_ficha_jugador[0]==separar_ficha_tablero2[1] || separar_ficha_jugador[1]==separar_ficha_tablero2[1])
+                 return false 
+            }
+          }
+            
+        
+        }
+      }
+        return true;
+    }
+
+  }
+}
+
 function jugar(ip,id,ficha,puerto){
   function verificarigualdad(ficha,tablero){
     return (ficha == tablero) ? true : false ;
@@ -335,7 +407,11 @@ function jugar(ip,id,ficha,puerto){
                 partidas[i].fichas_jugadas.push(ficha)
                 //quito la pieza que agregue
                 partidas[i].jugador1.fichas.splice(existe,1)
-                partidas[i].turno_jugador=2
+                if (partidas[i].jugador1.fichas.length ==0){
+                  throw 'GANO'
+                }
+                if(!pasoturno(2,id))
+                  partidas[i].turno_jugador=2
                 console.log("ENTrE EN la condicion de vacio")
                 console.log(" numero de fichas:: "+partidas[i].fichas_jugadas.length)
               }
@@ -354,7 +430,8 @@ function jugar(ip,id,ficha,puerto){
                   else
                     partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador1.fichas.splice(existe,1)
-                  partidas[i].turno_jugador=2
+                  if(!pasoturno(2,id))
+                    partidas[i].turno_jugador=2
                 }
                 else {
                   comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
@@ -367,7 +444,8 @@ function jugar(ip,id,ficha,puerto){
                       partidas[i].fichas_jugadas.push(ficha)
                     //quito la pieza que agregue
                     partidas[i].jugador1.fichas.splice(existe,1)
-                    partidas[i].turno_jugador=2
+                    if(!pasoturno(2,id))
+                      partidas[i].turno_jugador=2
                   }
                 }
               }
@@ -381,8 +459,9 @@ function jugar(ip,id,ficha,puerto){
                     partidas[i].fichas_jugadas.unshift(volteada)
                   else
                     partidas[i].fichas_jugadas.unshift(ficha)
-                  partidas[i].jugador1.fichas.splice(existe,1)   
-                  partidas[i].turno_jugador=2
+                  partidas[i].jugador1.fichas.splice(existe,1)
+                  if(!pasoturno(2,id))   
+                    partidas[i].turno_jugador=2
                 }
                 else{
                   comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
@@ -394,7 +473,8 @@ function jugar(ip,id,ficha,puerto){
                       partidas[i].fichas_jugadas.push(ficha)
                     //quito la pieza que agregue
                     partidas[i].jugador1.fichas.splice(existe,1)
-                    partidas[i].turno_jugador=2
+                    if(!pasoturno(2,id))
+                      partidas[i].turno_jugador=2
                   }
 
                 }
@@ -407,8 +487,9 @@ function jugar(ip,id,ficha,puerto){
         }
         
       }
+      else  throw 'IpNovalido'
     }
-        }
+        } else throw 'PartidaNoValida'
         //MANEJO DE JUGADOR 2
         if(partidas[i].turno_jugador==2){
           if(partidas[i].jugador2.ip==ip){
@@ -421,7 +502,8 @@ function jugar(ip,id,ficha,puerto){
                 partidas[i].fichas_jugadas.push(ficha)
                 //quito la pieza que agregue
                 partidas[i].jugador2.fichas.splice(existe,1)
-                partidas[i].turno_jugador=1
+                if(!pasoturno(1,id))
+                  partidas[i].turno_jugador=1
               }
             
                //validaciones en el caso de que el tablero tenga fiichas
@@ -441,7 +523,8 @@ function jugar(ip,id,ficha,puerto){
                       partidas[i].fichas_jugadas.unshift(ficha)
                     }
                     partidas[i].jugador2.fichas.splice(existe,1)
-                    partidas[i].turno_jugador=1
+                    if(!pasoturno(1,id))
+                      partidas[i].turno_jugador=1
                   }
                   else{
                     comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
@@ -454,7 +537,8 @@ function jugar(ip,id,ficha,puerto){
                         partidas[i].fichas_jugadas.push(ficha)
                       //quito la pieza que agregue
                       partidas[i].jugador2.fichas.splice(existe,1)
-                      partidas[i].turno_jugador=1
+                      if(!pasoturno(1,id))
+                        partidas[i].turno_jugador=1
                     }
                   }
                   
@@ -470,16 +554,18 @@ function jugar(ip,id,ficha,puerto){
                   else 
                     partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador2.fichas.splice(existe,1)   
-                  partidas[i].turno_jugador=1
+                  if(!pasoturno(1,id))
+                    partidas[i].turno_jugador=1
                 }
                 else{
                   comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
                   if(verificarigualdad(separarficha[0],fichaderecha[1])){
                     //agrego en el tablero
                     partidas[i].fichas_jugadas.push(ficha);
-                    //quito la pieza que agregue
+                    //quito la pieza que agregue 
                     partidas[i].jugador2.fichas.splice(existe,1);
-                    partidas[i].turno_jugador=1             
+                    if(!pasoturno(1,id))
+                      partidas[i].turno_jugador=1              
                    }
                 }
                
@@ -497,10 +583,20 @@ function jugar(ip,id,ficha,puerto){
 }
 
 
+
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
-  jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
-  
+  try {
+    jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
+  } 
+  catch(err){
+    if(err=="PartidaNoValida")
+    res.json({ status: "success", message: "PARTIDA NO EXISTE"});
+    if(err=="IpNovalido")
+    res.json({ status: "success", message: "IP NO VALIDO"});
+    if(err== "GANO")
+    res.json({ status: "success", message: "GANO"});
+  }
   //ciclo encargado de replicar la informacion a los demas nodos
   for (var i = 0; i < usuariosLista.length ; i++) {
     let options = {
