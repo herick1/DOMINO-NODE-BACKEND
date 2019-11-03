@@ -7,7 +7,7 @@ const bodyParser = require("body-parser");
 const _ = require("lodash");
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 const port = process.env.PORT;
-
+const ip = require("ip");
 var app = express();
 
 app.use(
@@ -23,8 +23,8 @@ app.use(bodyParser.json());
 let YO= {
           name:"herick",
           numeroplayer:1,
-          port: 10002,
-          url:"localhost" 
+          port: 10001,
+          url: ip.address()
         }; 
 
 let partidas=[] 
@@ -71,14 +71,11 @@ class Partida{
 
 //ESte post funciona para registrar la informacion de manera local en el servidor 
 //del nuevo usuario lo que se le pide es:
-//TODO hacer que la ip de uno mismo sea automatico y no sea por parametro
 app.post("/registrarusuario", urlencodedParser, (req, res) => {
-  let body = _.pick(req.body, ["name","port","url"]);
+  let body = _.pick(req.body, ["name"]);
   console.log("POST /registrarusuario:");
   console.log(body);
   YO.name = body.name;
-  YO.port = body.port;
-  YO.url = body.url;
   res.json({ status: "success", message: body});
 });
 
@@ -147,16 +144,16 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
   //ciclo encargado de actualizar localmente la partida con el nodo que se quiere unir a ella
   //en el caso que yo la haya creado
   let seUnio = false ;
-  if((YO.url == body.partida.url) && (YO.port == body.partida.port)){ //TODOlo de port
+  if(YO.url == body.partida.url){ 
     for (var i = 0; i< partidas.length; i++){
       if((body.partida.id == partidas[i].id) && (partidas[i].estatus=="ESPERA")){
         if(partidas[i].jugador1.ip== ""){
-          partidas[i].jugador1.ip=body.partida.port //TODO cambiar port por url
+          partidas[i].jugador1.ip=body.partida.url 
           seUnio = true;
         }else                                        //recorar que se pasa por el postman como port
           if(partidas[i].jugador2.ip== ""){
-            if(partidas[i].jugador1.ip != body.partida.port){ //TODO cambiar port por url 
-              partidas[i].jugador2.ip=body.partida.port //TODO cambiar port por url 
+            if(partidas[i].jugador1.ip != body.partida.url){ 
+              partidas[i].jugador2.ip=body.partida.url  
               partidas[i].estatus="JUGANDO"
               seUnio = true ;
             }
@@ -234,11 +231,11 @@ app.put("/unirsepartidaBackend", urlencodedParser, (req, res) => {
   for (var i = 0; i< partidas.length; i++){
     if((body.partida.id == partidas[i].id) && (partidas[i].estatus=="ESPERA")){
       if(partidas[i].jugador1.ip== "")
-        partidas[i].jugador1.ip=body.partida.port //TODO poner  partida.url (ya el se trae la url)
+        partidas[i].jugador1.ip=body.partida.url 
       else 
       if(partidas[i].jugador2.ip== ""){
-        if(partidas[i].jugador1.ip != body.partida.port){ //TODO cambiar port por url
-          partidas[i].jugador2.ip=body.partida.port      //TODO cambiar port por url
+        if(partidas[i].jugador1.ip != body.partida.url){ 
+          partidas[i].jugador2.ip=body.partida.url      
           partidas[i].estatus="JUGANDO"              
         }
       }       
@@ -670,13 +667,12 @@ var usuariosLista = [];
 app.post("/newplayer", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["newplayer"]);
 
- // if (body.newplayer.url != YO.url ) { TODO cambiar por esta linea
-  if(YO.port != body.newplayer.port){
+  if (body.newplayer.url != YO.url ) { 
     //comprobamos si el nuevo usuario esta en la lista de los usuarios
     ExisteUsuario= false;
 
     for (var i = 0; i < usuariosLista.length ; i++) {
-        if(usuariosLista[i].port == body.newplayer.port )ExisteUsuario = true; //TODO cambiar port por url al final
+        if(usuariosLista[i].url == body.newplayer.url )ExisteUsuario = true;
     }
     if(!ExisteUsuario){
       usuariosLista.push(body.newplayer);  
