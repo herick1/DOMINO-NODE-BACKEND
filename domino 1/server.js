@@ -626,16 +626,17 @@ function jugar(ip,id,ficha,puerto){
 
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
+  let mensaje = "correcto";
   try {
     jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
   } 
   catch(err){
-   /* if(err=="PartidaNoValida")
-    res.json({ status: "success", message: "PARTIDA NO EXISTE"});
+    if(err=="PartidaNoValida")
+      mensaje ="PARTIDA NO EXISTE";
     if(err=="IpNovalido")
-    res.json({ status: "success", message: "IP NO VALIDO"});
+      mensaje=  "IP NO VALIDO";
     if(err== "GANO")
-    res.json({ status: "success", message: "GANO"});*/
+      mensaje= "GANO";
   }
   //ciclo encargado de replicar la informacion a los demas nodos
   for (var i = 0; i < usuariosLista.length ; i++) {
@@ -660,7 +661,10 @@ app.post("/realizarJugada", urlencodedParser, (req, res) => {
         });
         
   }
-  res.json({ status: "success", message: body});
+  if(mensaje == "correcto")
+    res.json({ status: "success", message: body});
+  else
+    res.json({ status: "success", message: mensaje});    
 });
 
 app.put("/realizarjugadaBackend", urlencodedParser, (req, res) => {
