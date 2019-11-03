@@ -509,7 +509,7 @@ function jugar(ip,id,ficha,puerto){
       }
       else  throw 'IpNovalido'
     }
-        } else throw 'PartidaNoValida'
+        }// else throw 'PartidaNoValida'
         //MANEJO DE JUGADOR 2
         if(partidas[i].turno_jugador==2){
           if(partidas[i].jugador2.ip==ip){
@@ -626,6 +626,7 @@ function jugar(ip,id,ficha,puerto){
 
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
+  console.log(body)
   let mensaje = "correcto";
   try {
     jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
@@ -669,7 +670,11 @@ app.post("/realizarJugada", urlencodedParser, (req, res) => {
 
 app.put("/realizarjugadaBackend", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
-  jugar(body.ip,body.id,body.ficha) 
+  try {
+    jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
+  } 
+  catch(err){
+  }
   res.json({ status: "success", message: "correcto"});
 });
 
