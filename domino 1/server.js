@@ -74,7 +74,6 @@ class Partida{
 app.post("/registrarusuario", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["name","url"]);
   console.log("POST /registrarusuario:");
-  console.log(body);
   YO.name = body.name;
   YO.url = body.url;
   res.json({ status: "success", message: body});
@@ -84,12 +83,7 @@ app.post("/registrarusuario", urlencodedParser, (req, res) => {
 // el numero de player logre que se hiciera automatico , genial !
 app.get("/jugador", urlencodedParser, (req, res) => {
   console.log(" GET /jugador:");
-  console.log("Yo soy el jugador : "+YO.numeroplayer);
   res.json({ status: "success", message: YO });
-});
-// el numero de player logre que se hiciera automatico , genial !
-app.get("/probando", urlencodedParser, (req, res) => {
-  res.status(500).send({ status: "500", message: "ERROr mandando desde back" });
 });
 // post para crear la partida, lo ejecuta angular
 app.post("/crearpartida", urlencodedParser, (req, res) => {
@@ -110,7 +104,7 @@ app.post("/crearpartida", urlencodedParser, (req, res) => {
         json: true,
         body: {partida}
     }
-    console.log(options.body);
+    
     rp(options)
         .then(response => {
             console.log("pasamos la info a los demas");
@@ -135,14 +129,11 @@ app.post("/crearpartidaBackend", urlencodedParser, (req, res) => {
 
 //metodo que pinta todo en el angular
 app.get("/partidas", urlencodedParser, (req, res) => {
-  console.log(partidas);
   res.json({ status: "success", message: partidas });
 });
 
 //unirse a las partidas
 app.post("/unirsepartida", urlencodedParser, (req, res) => {
-  console.log("hoalaa" )
-    console.log(req.body )
   let body = _.pick(req.body, ["partida"]);
   //ciclo encargado de actualizar localmente la partida con el nodo que se quiere unir a ella
   //en el caso que yo la haya creado
@@ -179,7 +170,7 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
                 }
               }
           }
-          console.log(options.body);
+     
           rp(options)
               .then(response => {
                   console.log("pasamos la info para el siguiente");
@@ -213,7 +204,6 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
               }
             }
           }
-          console.log(options.body);
           rp(options)
               .then(response => {
                   console.log("pasamos la info para el siguiente");
@@ -267,7 +257,6 @@ function Abandonar(id_partida, estatus) {
                   "estatus":estatus
               }
           }
-          console.log(options.body);
           rp(options)
               .then(response => {
                   console.log("pasamos la info para el siguiente");
@@ -415,8 +404,6 @@ function jugar(ip,id,ficha,puerto){
                 else //condicion de partida trancada si el otro pasa debo ver si yo paso
                   if(pasoturno(1,id))
                     partidas[i].estatus="FINALIZO"
-                console.log("ENTrE EN la condicion de vacio")
-                console.log(" numero de fichas:: "+partidas[i].fichas_jugadas.length)
               }
             
             //validaciones en el caso de que el tablero tenga fiichas
@@ -426,7 +413,6 @@ function jugar(ip,id,ficha,puerto){
               volteada=separarficha[1]+":"+separarficha[0]
               if (partidas[i].fichas_jugadas.length ==1){
                 comparacion_volteada=verificarigualdad(separarficha[0],tablero[0])
-                console.log("funcion volteada"+comparacion_volteada)
                 if (verificarigualdad(separarficha[1],tablero[0]) || (comparacion_volteada )){
                   if(comparacion_volteada )
                     partidas[i].fichas_jugadas.unshift(volteada)
@@ -446,7 +432,6 @@ function jugar(ip,id,ficha,puerto){
                 }
                 else {
                   comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
-                  console.log("funcion volteada por el push "+comparacion_volteada)
                   if(verificarigualdad(separarficha[0],tablero[1]) || (comparacion_volteada)){
                     //agrego en el tablero
                     if(comparacion_volteada )
@@ -553,10 +538,8 @@ function jugar(ip,id,ficha,puerto){
             // si solo tiene una ficha
             tablero=partidas[i].fichas_jugadas[0].split(":")
             volteada=separarficha[1]+":"+separarficha[0]
-            console.log("ficha volteada: "+volteada)
             if (partidas[i].fichas_jugadas.length ==1){
               comparacion_volteada=verificarigualdad(separarficha[0],tablero[0])
-              console.log("funcion volteada"+comparacion_volteada)
               if (verificarigualdad(separarficha[1],tablero[0]) ||( comparacion_volteada )){
                 if(comparacion_volteada){
                   partidas[i].fichas_jugadas.unshift(volteada)
@@ -578,7 +561,6 @@ function jugar(ip,id,ficha,puerto){
               }
               else{
                 comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
-                console.log("funcion volteada por el push "+comparacion_volteada)
                 if(verificarigualdad(separarficha[0],tablero[1]) || (comparacion_volteada )){
                   //agrego en el tablero
                   if(comparacion_volteada )
@@ -660,7 +642,6 @@ function jugar(ip,id,ficha,puerto){
 
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
-  console.log(body)
   let mensaje = "correcto";
   try {
     jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
@@ -686,7 +667,6 @@ app.post("/realizarJugada", urlencodedParser, (req, res) => {
             "ficha":body.ficha
         }
     }
-    console.log(options.body);
     rp(options)
         .then(response => {
             console.log("pasamos la info para el siguiente");
@@ -743,8 +723,7 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
               json: true,
               body: body
           }
-          console.log("1: ");
-          console.log(options.body);
+
           rp(options)
               .then(response => {
                   console.log("pasamos la info para el siguiente");
@@ -768,8 +747,7 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
                         } 
                     }
               }
-              console.log("2: ");
-              console.log(options.body);
+
           rp(options)
               .then(response => {
                   console.log("pasamos la info para el siguiente");
@@ -787,8 +765,6 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
             json: true,
             body: { partida}
         }
-        console.log("77:");
-        console.log(options.body);
         rp(options)
           .then(response => {
             console.log("pasamos la info para el siguiente");
@@ -812,8 +788,6 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
 //de los servidores que ya estan conectados
 app.post("/newplayerRetorno", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["newplayer"]);
-  console.log("3 :");
-  console.log(body);
   ExisteUsuario= false;
   for (var i = 0; i < usuariosLista.length ; i++) {
       if(usuariosLista[i] == body.newplayer )ExisteUsuario = true;
