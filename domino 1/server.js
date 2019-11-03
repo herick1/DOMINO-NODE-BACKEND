@@ -76,7 +76,7 @@ app.post("/registrarusuario", urlencodedParser, (req, res) => {
   console.log("POST /registrarusuario:");
   console.log(body);
   YO.name = body.name;
-    YO.url = body.url;
+  YO.url = body.url;
   res.json({ status: "success", message: body});
 });
 
