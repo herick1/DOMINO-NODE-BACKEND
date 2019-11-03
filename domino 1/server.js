@@ -628,39 +628,64 @@ app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
   try {
     jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
+    //ciclo encargado de replicar la informacion a los demas nodos
+    for (var i = 0; i < usuariosLista.length ; i++) {
+      let options = {
+          method: "PUT",
+          uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/realizarjugadaBackend", 
+          resolveWithFullResponse: true,
+          json: true,
+          body: {
+              "ip":body.ip,
+              "id":body.id,
+              "ficha":body.ficha
+          }
+      }
+      console.log(options.body);
+      rp(options)
+          .then(response => {
+              console.log("pasamos la info para el siguiente");
+          })
+          .catch(e => {
+            console.log("Error realizando jugada"+e );
+          });
+          
+    }
+    res.json({ status: "success", message: body});
   } 
   catch(err){
     if(err=="PartidaNoValida")
     res.json({ status: "success", message: "PARTIDA NO EXISTE"});
     if(err=="IpNovalido")
     res.json({ status: "success", message: "IP NO VALIDO"});
-    if(err== "GANO")
-    res.json({ status: "success", message: "GANO"});
-  }
-  //ciclo encargado de replicar la informacion a los demas nodos
-  for (var i = 0; i < usuariosLista.length ; i++) {
-    let options = {
-        method: "PUT",
-        uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/realizarjugadaBackend", 
-        resolveWithFullResponse: true,
-        json: true,
-        body: {
-            "ip":body.ip,
-            "id":body.id,
-            "ficha":body.ficha
+    if(err== "GANO"){
+      //ciclo encargado de replicar la informacion a los demas nodos
+      for (var i = 0; i < usuariosLista.length ; i++) {
+        let options = {
+            method: "PUT",
+            uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/realizarjugadaBackend", 
+            resolveWithFullResponse: true,
+            json: true,
+            body: {
+                "ip":body.ip,
+                "id":body.id,
+                "ficha":body.ficha
+            }
         }
+        console.log(options.body);
+        rp(options)
+            .then(response => {
+                console.log("pasamos la info para el siguiente");
+            })
+            .catch(e => {
+              console.log("Error realizando jugada"+e );
+            });
+            
+      }
+      res.json({ status: "success", message: "GANO"});
     }
-    console.log(options.body);
-    rp(options)
-        .then(response => {
-            console.log("pasamos la info para el siguiente");
-        })
-        .catch(e => {
-          console.log("Error realizando jugada"+e );
-        });
-        
   }
-  res.json({ status: "success", message: body});
+
 });
 
 app.put("/realizarjugadaBackend", urlencodedParser, (req, res) => {
