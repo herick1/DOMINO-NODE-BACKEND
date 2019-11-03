@@ -625,9 +625,12 @@ function jugar(ip,id,ficha,puerto){
             }
             else{
               comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
-              if(verificarigualdad(separarficha[0],fichaderecha[1])){
-                //agrego en el tablero
-                partidas[i].fichas_jugadas.push(ficha);
+              if(verificarigualdad(separarficha[0],fichaderecha[1]) || comparacion_volteada){
+                 //agrego en el tablero
+                if(comparacion_volteada)
+                  partidas[i].fichas_jugadas.push(volteada)
+                else
+                  partidas[i].fichas_jugadas.push(ficha);
                 //quito la pieza que agregue 
                 partidas[i].jugador2.fichas.splice(existe,1);
                 if(!pasoturno(1,id))
