@@ -72,10 +72,11 @@ class Partida{
 //ESte post funciona para registrar la informacion de manera local en el servidor 
 //del nuevo usuario lo que se le pide es:
 app.post("/registrarusuario", urlencodedParser, (req, res) => {
-  let body = _.pick(req.body, ["name"]);
+  let body = _.pick(req.body, ["name","url"]);
   console.log("POST /registrarusuario:");
   console.log(body);
   YO.name = body.name;
+    YO.url = body.url;
   res.json({ status: "success", message: body});
 });
 
@@ -84,7 +85,6 @@ app.post("/registrarusuario", urlencodedParser, (req, res) => {
 app.get("/jugador", urlencodedParser, (req, res) => {
   console.log(" GET /jugador:");
   console.log("Yo soy el jugador : "+YO.numeroplayer);
-  console.log(YO);
   res.json({ status: "success", message: YO });
 });
 // el numero de player logre que se hiciera automatico , genial !
