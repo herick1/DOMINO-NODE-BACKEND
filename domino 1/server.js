@@ -409,6 +409,8 @@ function jugar(ip,id,ficha,puerto){
                 //quito la pieza que agregue
                 partidas[i].jugador1.fichas.splice(existe,1)
                 if (partidas[i].jugador1.fichas.length ==0){
+                  partidas[i].status="FINALIZO"
+                  partidas[i].ganador=ip
                   throw 'GANO'
                 }
                 if(!pasoturno(2,id))
@@ -431,6 +433,11 @@ function jugar(ip,id,ficha,puerto){
                   else
                     partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador1.fichas.splice(existe,1)
+                  if (partidas[i].jugador1.fichas.length ==0){
+                    partidas[i].status="FINALIZO"
+                    partidas[i].ganador=ip
+                    throw 'GANO'
+                  }
                   if(!pasoturno(2,id))
                     partidas[i].turno_jugador=2
                 }
@@ -445,6 +452,11 @@ function jugar(ip,id,ficha,puerto){
                       partidas[i].fichas_jugadas.push(ficha)
                     //quito la pieza que agregue
                     partidas[i].jugador1.fichas.splice(existe,1)
+                    if (partidas[i].jugador1.fichas.length ==0){
+                      partidas[i].status="FINALIZO"
+                      partidas[i].ganador=ip
+                      throw 'GANO'
+                    }
                     if(!pasoturno(2,id))
                       partidas[i].turno_jugador=2
                   }
@@ -461,6 +473,11 @@ function jugar(ip,id,ficha,puerto){
                   else
                     partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador1.fichas.splice(existe,1)
+                  if (partidas[i].jugador1.fichas.length ==0){
+                    partidas[i].status="FINALIZO"
+                    partidas[i].ganador=ip
+                    throw 'GANO'
+                  }
                   if(!pasoturno(2,id))   
                     partidas[i].turno_jugador=2
                 }
@@ -474,6 +491,11 @@ function jugar(ip,id,ficha,puerto){
                       partidas[i].fichas_jugadas.push(ficha)
                     //quito la pieza que agregue
                     partidas[i].jugador1.fichas.splice(existe,1)
+                    if (partidas[i].jugador1.fichas.length ==0){
+                      partidas[i].status="FINALIZO"
+                      partidas[i].ganador=ip
+                      throw 'GANO'
+                    }
                     if(!pasoturno(2,id))
                       partidas[i].turno_jugador=2
                   }
@@ -503,6 +525,11 @@ function jugar(ip,id,ficha,puerto){
                 partidas[i].fichas_jugadas.push(ficha)
                 //quito la pieza que agregue
                 partidas[i].jugador2.fichas.splice(existe,1)
+                if (partidas[i].jugador2.fichas.length ==0){
+                  partidas[i].status="FINALIZO"
+                  partidas[i].ganador=ip
+                  throw 'GANO'
+                }
                 if(!pasoturno(1,id))
                   partidas[i].turno_jugador=1
               }
@@ -524,6 +551,11 @@ function jugar(ip,id,ficha,puerto){
                       partidas[i].fichas_jugadas.unshift(ficha)
                     }
                     partidas[i].jugador2.fichas.splice(existe,1)
+                    if (partidas[i].jugador2.fichas.length ==0){
+                      partidas[i].status="FINALIZO"
+                      partidas[i].ganador=ip
+                      throw 'GANO'
+                    }
                     if(!pasoturno(1,id))
                       partidas[i].turno_jugador=1
                   }
@@ -538,6 +570,11 @@ function jugar(ip,id,ficha,puerto){
                         partidas[i].fichas_jugadas.push(ficha)
                       //quito la pieza que agregue
                       partidas[i].jugador2.fichas.splice(existe,1)
+                      if (partidas[i].jugador2.fichas.length ==0){
+                        partidas[i].status="FINALIZO"
+                        partidas[i].ganador=ip
+                        throw 'GANO'
+                      }
                       if(!pasoturno(1,id))
                         partidas[i].turno_jugador=1
                     }
@@ -555,6 +592,11 @@ function jugar(ip,id,ficha,puerto){
                   else 
                     partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador2.fichas.splice(existe,1)   
+                  if (partidas[i].jugador2.fichas.length ==0){
+                    partidas[i].status="FINALIZO"
+                    partidas[i].ganador=ip
+                    throw 'GANO'
+                  }
                   if(!pasoturno(1,id))
                     partidas[i].turno_jugador=1
                 }
