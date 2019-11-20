@@ -23,7 +23,7 @@ app.use(bodyParser.json());
 let YO= {
           name:"herick",
           numeroplayer:1,
-          port: 10003,
+          port: 10001,
           url:"localhost" 
         }; 
 
@@ -66,7 +66,6 @@ class Partida{
 
 
 
-
 // ENDPOINT:
 
 //ESte post funciona para registrar la informacion de manera local en el servidor 
@@ -75,23 +74,23 @@ class Partida{
 app.post("/registrarusuario", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["name","port","url"]);
   console.log("POST /registrarusuario:");
-  console.log(body);
   YO.name = body.name;
   YO.port = body.port;
   YO.url = body.url;
   res.json({ status: "success", message: body});
 });
 
-//TODO quitar este get 
 //get para ver los status 
 // el numero de player logre que se hiciera automatico , genial !
 app.get("/jugador", urlencodedParser, (req, res) => {
   console.log(" GET /jugador:");
+<<<<<<< HEAD:server.js
+=======
   console.log("Yo soy el jugador : "+YO.numeroplayer);
   console.log(YO);
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
   res.json({ status: "success", message: YO });
 });
-
 // post para crear la partida, lo ejecuta angular
 app.post("/crearpartida", urlencodedParser, (req, res) => {
   let partida = new Partida();
@@ -111,7 +110,7 @@ app.post("/crearpartida", urlencodedParser, (req, res) => {
         json: true,
         body: {partida}
     }
-    console.log(options.body);
+    
     rp(options)
         .then(response => {
             console.log("pasamos la info a los demas");
@@ -136,7 +135,6 @@ app.post("/crearpartidaBackend", urlencodedParser, (req, res) => {
 
 //metodo que pinta todo en el angular
 app.get("/partidas", urlencodedParser, (req, res) => {
-  console.log(partidas);
   res.json({ status: "success", message: partidas });
 });
 
@@ -146,7 +144,7 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
   //ciclo encargado de actualizar localmente la partida con el nodo que se quiere unir a ella
   //en el caso que yo la haya creado
   let seUnio = false ;
-  if((YO.url == body.partida.url) && (YO.port == body.partida.port)){
+  if((YO.url == body.partida.url) && (YO.port == body.partida.port)){ //TODOlo de port
     for (var i = 0; i< partidas.length; i++){
       if((body.partida.id == partidas[i].id) && (partidas[i].estatus=="ESPERA")){
         if(partidas[i].jugador1.ip== ""){
@@ -155,7 +153,7 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
         }else                                        //recorar que se pasa por el postman como port
           if(partidas[i].jugador2.ip== ""){
             if(partidas[i].jugador1.ip != body.partida.port){ //TODO cambiar port por url 
-              partidas[i].jugador2.ip=body.partida.port
+              partidas[i].jugador2.ip=body.partida.port //TODO cambiar port por url 
               partidas[i].estatus="JUGANDO"
               seUnio = true ;
             }
@@ -178,7 +176,7 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
                 }
               }
           }
-          console.log(options.body);
+     
           rp(options)
               .then(response => {
                   console.log("pasamos la info para el siguiente");
@@ -212,7 +210,6 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
               }
             }
           }
-          console.log(options.body);
           rp(options)
               .then(response => {
                   console.log("pasamos la info para el siguiente");
@@ -266,7 +263,6 @@ function Abandonar(id_partida, estatus) {
                   "estatus":estatus
               }
           }
-          console.log(options.body);
           rp(options)
               .then(response => {
                   console.log("pasamos la info para el siguiente");
@@ -284,9 +280,10 @@ function Abandonar(id_partida, estatus) {
 app.put("/cambiarestatuspartida", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["id", "estatus"]);
   for(var i=0; i< partidas.length; i++)
-    if(partidas[i].id == body.id) 
+    if(partidas[i].id == body.id){ 
       partidas[i].estatus = body.estatus;
-
+      break;
+    }
   res.json({ status: "ok", message: "ok"});
 });
 
@@ -303,7 +300,6 @@ app.put("/JugadorAbandonaPartida", urlencodedParser, (req, res) => {
       res.json({ status: "error", message: "no se encontro esa id para cabiar el estatus"});
   }
 });
-
 
 //manejar juego
 //devuelvo true si el jugador pasa y falso si no pasa
@@ -405,14 +401,20 @@ function jugar(ip,id,ficha,puerto){
                 //quito la pieza que agregue
                 partidas[i].jugador1.fichas.splice(existe,1)
                 if (partidas[i].jugador1.fichas.length ==0){
-                  partidas[i].status="FINALIZO"
+                  partidas[i].estatus="FINALIZO"
                   partidas[i].ganador=ip
                   throw 'GANO'
                 }
                 if(!pasoturno(2,id))
                   partidas[i].turno_jugador=2
+<<<<<<< HEAD:server.js
+                else //condicion de partida trancada si el otro pasa debo ver si yo paso
+                  if(pasoturno(1,id))
+                    partidas[i].estatus="FINALIZO"
+=======
                 console.log("ENTrE EN la condicion de vacio")
                 console.log(" numero de fichas:: "+partidas[i].fichas_jugadas.length)
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
               }
             
             //validaciones en el caso de que el tablero tenga fiichas
@@ -422,7 +424,6 @@ function jugar(ip,id,ficha,puerto){
               volteada=separarficha[1]+":"+separarficha[0]
               if (partidas[i].fichas_jugadas.length ==1){
                 comparacion_volteada=verificarigualdad(separarficha[0],tablero[0])
-                console.log("funcion volteada"+comparacion_volteada)
                 if (verificarigualdad(separarficha[1],tablero[0]) || (comparacion_volteada )){
                   if(comparacion_volteada )
                     partidas[i].fichas_jugadas.unshift(volteada)
@@ -430,16 +431,21 @@ function jugar(ip,id,ficha,puerto){
                     partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador1.fichas.splice(existe,1)
                   if (partidas[i].jugador1.fichas.length ==0){
-                    partidas[i].status="FINALIZO"
+                    partidas[i].estatus="FINALIZO"
                     partidas[i].ganador=ip
                     throw 'GANO'
                   }
                   if(!pasoturno(2,id))
                     partidas[i].turno_jugador=2
+<<<<<<< HEAD:server.js
+                  else //condicion de partida trancada si el otro pasa debo ver si yo paso
+                    if(pasoturno(1,id))
+                      partidas[i].estatus="FINALIZO"
+=======
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
                 }
                 else {
                   comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
-                  console.log("funcion volteada por el push "+comparacion_volteada)
                   if(verificarigualdad(separarficha[0],tablero[1]) || (comparacion_volteada)){
                     //agrego en el tablero
                     if(comparacion_volteada )
@@ -449,12 +455,18 @@ function jugar(ip,id,ficha,puerto){
                     //quito la pieza que agregue
                     partidas[i].jugador1.fichas.splice(existe,1)
                     if (partidas[i].jugador1.fichas.length ==0){
-                      partidas[i].status="FINALIZO"
+                      partidas[i].estatus="FINALIZO"
                       partidas[i].ganador=ip
                       throw 'GANO'
                     }
                     if(!pasoturno(2,id))
                       partidas[i].turno_jugador=2
+<<<<<<< HEAD:server.js
+                    else //condicion de partida trancada si el otro pasa debo ver si yo paso
+                      if(pasoturno(1,id))
+                        partidas[i].estatus="FINALIZO"
+=======
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
                   }
                 }
               }
@@ -470,12 +482,18 @@ function jugar(ip,id,ficha,puerto){
                     partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador1.fichas.splice(existe,1)
                   if (partidas[i].jugador1.fichas.length ==0){
-                    partidas[i].status="FINALIZO"
+                    partidas[i].estatus="FINALIZO"
                     partidas[i].ganador=ip
                     throw 'GANO'
                   }
                   if(!pasoturno(2,id))   
                     partidas[i].turno_jugador=2
+<<<<<<< HEAD:server.js
+                  else //condicion de partida trancada si el otro pasa debo ver si yo paso
+                    if(pasoturno(1,id))
+                      partidas[i].estatus="FINALIZO"
+=======
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
                 }
                 else{
                   comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
@@ -488,12 +506,18 @@ function jugar(ip,id,ficha,puerto){
                     //quito la pieza que agregue
                     partidas[i].jugador1.fichas.splice(existe,1)
                     if (partidas[i].jugador1.fichas.length ==0){
-                      partidas[i].status="FINALIZO"
+                      partidas[i].estatus="FINALIZO"
                       partidas[i].ganador=ip
                       throw 'GANO'
                     }
                     if(!pasoturno(2,id))
                       partidas[i].turno_jugador=2
+<<<<<<< HEAD:server.js
+                    else //condicion de partida trancada si el otro pasa debo ver si yo paso
+                      if(pasoturno(1,id))
+                        partidas[i].estatus="FINALIZO"
+=======
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
                   }
 
                 }
@@ -508,6 +532,46 @@ function jugar(ip,id,ficha,puerto){
       }
       else  throw 'IpNovalido'
     }
+<<<<<<< HEAD:server.js
+    //MANEJO DE JUGADOR 2
+    if(partidas[i].turno_jugador==2){
+      if(partidas[i].jugador2.ip==ip){
+        existe= partidas[i].jugador2.fichas.indexOf(ficha)
+        if(existe != -1){
+          separarficha=ficha.split(":")
+          // validacion del tablaro vacio
+          if(partidas[i].fichas_jugadas.length ==0 ){
+            //agrego en el tablero
+            partidas[i].fichas_jugadas.push(ficha)
+            //quito la pieza que agregue
+            partidas[i].jugador2.fichas.splice(existe,1)
+            if (partidas[i].jugador2.fichas.length ==0){
+              partidas[i].estatus="FINALIZO"
+              partidas[i].ganador=ip
+              throw 'GANO'
+            }
+            if(!pasoturno(1,id))
+              partidas[i].turno_jugador=1
+            else //condicion de partida trancada si el otro pasa debo ver si yo paso
+              if(pasoturno(2,id))
+                partidas[i].estatus="FINALIZO"
+          }
+        
+           //validaciones en el caso de que el tablero tenga fiichas
+          else{
+            // si solo tiene una ficha
+            tablero=partidas[i].fichas_jugadas[0].split(":")
+            volteada=separarficha[1]+":"+separarficha[0]
+            if (partidas[i].fichas_jugadas.length ==1){
+              comparacion_volteada=verificarigualdad(separarficha[0],tablero[0])
+              if (verificarigualdad(separarficha[1],tablero[0]) ||( comparacion_volteada )){
+                if(comparacion_volteada){
+                  partidas[i].fichas_jugadas.unshift(volteada)
+                }
+                else{
+                  partidas[i].fichas_jugadas.unshift(ficha)
+                }
+=======
         } else throw 'PartidaNoValida'
         //MANEJO DE JUGADOR 2
         if(partidas[i].turno_jugador==2){
@@ -520,18 +584,36 @@ function jugar(ip,id,ficha,puerto){
                 //agrego en el tablero
                 partidas[i].fichas_jugadas.push(ficha)
                 //quito la pieza que agregue
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
                 partidas[i].jugador2.fichas.splice(existe,1)
                 if (partidas[i].jugador2.fichas.length ==0){
-                  partidas[i].status="FINALIZO"
+                  partidas[i].estatus="FINALIZO"
                   partidas[i].ganador=ip
                   throw 'GANO'
                 }
                 if(!pasoturno(1,id))
                   partidas[i].turno_jugador=1
+<<<<<<< HEAD:server.js
+                else //condicion de partida trancada si el otro pasa debo ver si yo paso
+                  if(pasoturno(2,id))
+                    partidas[i].estatus="FINALIZO"
+=======
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
               }
             
                //validaciones en el caso de que el tablero tenga fiichas
               else{
+<<<<<<< HEAD:server.js
+                comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
+                if(verificarigualdad(separarficha[0],tablero[1]) || (comparacion_volteada )){
+                  //agrego en el tablero
+                  if(comparacion_volteada )
+                    partidas[i].fichas_jugadas.push(volteada)
+                  else
+                    partidas[i].fichas_jugadas.push(ficha)
+                  //quito la pieza que agregue
+                  partidas[i].jugador2.fichas.splice(existe,1)
+=======
                 // si solo tiene una ficha
                 tablero=partidas[i].fichas_jugadas[0].split(":")
                 volteada=separarficha[1]+":"+separarficha[0]
@@ -588,13 +670,20 @@ function jugar(ip,id,ficha,puerto){
                   else 
                     partidas[i].fichas_jugadas.unshift(ficha)
                   partidas[i].jugador2.fichas.splice(existe,1)   
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
                   if (partidas[i].jugador2.fichas.length ==0){
-                    partidas[i].status="FINALIZO"
+                    partidas[i].estatus="FINALIZO"
                     partidas[i].ganador=ip
                     throw 'GANO'
                   }
                   if(!pasoturno(1,id))
                     partidas[i].turno_jugador=1
+<<<<<<< HEAD:server.js
+                  else //condicion de partida trancada si el otro pasa debo ver si yo paso
+                    if(pasoturno(2,id))
+                      partidas[i].estatus="FINALIZO"
+=======
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
                 }
                 else{
                   comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
@@ -611,6 +700,50 @@ function jugar(ip,id,ficha,puerto){
 
               }
               
+<<<<<<< HEAD:server.js
+            }
+          // caso en el que el tablero tenga mas de una ficha colocada
+          else{
+            fichaizquierda=partidas[i].fichas_jugadas[0].split(":")
+            fichaderecha=partidas[i].fichas_jugadas[partidas[i].fichas_jugadas.length-1].split(":")
+            comparacion_volteada=verificarigualdad(separarficha[0],fichaizquierda[0])
+            if (verificarigualdad(separarficha[1],fichaizquierda[0])|| comparacion_volteada){
+              if(comparacion_volteada)
+                partidas[i].fichas_jugadas.unshift(volteada)
+              else 
+                partidas[i].fichas_jugadas.unshift(ficha)
+              partidas[i].jugador2.fichas.splice(existe,1)   
+              if (partidas[i].jugador2.fichas.length ==0){
+                partidas[i].estatus="FINALIZO"
+                partidas[i].ganador=ip
+                throw 'GANO'
+              }
+              if(!pasoturno(1,id))
+                partidas[i].turno_jugador=1
+              else //condicion de partida trancada si el otro pasa debo ver si yo paso
+                if(pasoturno(2,id))
+                  partidas[i].estatus="FINALIZO"
+            }
+            else{
+              comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
+              if(verificarigualdad(separarficha[0],fichaderecha[1]) || comparacion_volteada){
+                 //agrego en el tablero
+                if(comparacion_volteada)
+                  partidas[i].fichas_jugadas.push(volteada)
+                else
+                  partidas[i].fichas_jugadas.push(ficha);
+                //quito la pieza que agregue 
+                partidas[i].jugador2.fichas.splice(existe,1);
+                if(!pasoturno(1,id))
+                  partidas[i].turno_jugador=1
+                else //condicion de partida trancada si el otro pasa debo ver si yo paso
+                  if(pasoturno(2,id))
+                    partidas[i].estatus="FINALIZO"              
+               }
+            }
+           
+=======
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
 
             } 
           }
@@ -625,8 +758,21 @@ function jugar(ip,id,ficha,puerto){
 
 app.post("/realizarJugada", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["ip","id","ficha"]);
-  jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
-  
+<<<<<<< HEAD:server.js
+  let mensaje = "correcto";
+=======
+>>>>>>> a4fc2a07c966b80ff4148929960ccf2caf25ac41:domino 1/server.js
+  try {
+    jugar(body.ip,body.id,body.ficha) //TODO para que si algo no lo hace ya no lo hagan los demas
+  } 
+  catch(err){
+    if(err=="PartidaNoValida")
+    res.json({ status: "success", message: "PARTIDA NO EXISTE"});
+    if(err=="IpNovalido")
+    res.json({ status: "success", message: "IP NO VALIDO"});
+    if(err== "GANO")
+    res.json({ status: "success", message: "GANO"});
+  }
   //ciclo encargado de replicar la informacion a los demas nodos
   for (var i = 0; i < usuariosLista.length ; i++) {
     let options = {
@@ -640,7 +786,6 @@ app.post("/realizarJugada", urlencodedParser, (req, res) => {
             "ficha":body.ficha
         }
     }
-    console.log(options.body);
     rp(options)
         .then(response => {
             console.log("pasamos la info para el siguiente");
@@ -691,8 +836,7 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
               json: true,
               body: body
           }
-          console.log("1: ");
-          console.log(options.body);
+
           rp(options)
               .then(response => {
                   console.log("pasamos la info para el siguiente");
@@ -716,8 +860,7 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
                         } 
                     }
               }
-              console.log("2: ");
-              console.log(options.body);
+
           rp(options)
               .then(response => {
                   console.log("pasamos la info para el siguiente");
@@ -735,8 +878,6 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
             json: true,
             body: { partida}
         }
-        console.log("77:");
-        console.log(options.body);
         rp(options)
           .then(response => {
             console.log("pasamos la info para el siguiente");
@@ -760,8 +901,6 @@ app.post("/newplayer", urlencodedParser, (req, res) => {
 //de los servidores que ya estan conectados
 app.post("/newplayerRetorno", urlencodedParser, (req, res) => {
   let body = _.pick(req.body, ["newplayer"]);
-  console.log("3 :");
-  console.log(body);
   ExisteUsuario= false;
   for (var i = 0; i < usuariosLista.length ; i++) {
       if(usuariosLista[i] == body.newplayer )ExisteUsuario = true;
