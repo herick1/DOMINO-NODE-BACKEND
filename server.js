@@ -814,6 +814,4 @@ app.delete("/*", (req, res) => {
   res.status(404).send();
 });
 
-app.listen(YO.port, () => {
-  console.log(`Started on port ${YO.port}`);
-});
+app.listen(process.env.PORT || 8080);

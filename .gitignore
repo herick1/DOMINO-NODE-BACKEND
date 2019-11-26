@@ -1,6 +1,4 @@
 #el ignore
 
 #dependecias
-/domino 1/node_modules
-/domino 2/node_modules
-/domino 3/node_modules
+/node_modules
