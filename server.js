@@ -65,8 +65,141 @@ class Partida{
 }
 
 
+// -----------------------clase archivo---------------------------------------
+var fs = require('fs');
+ yoParametros = 'YoParametros.json';
+ //usuariosLista = 'usuariosLista.json';
+ partidasJ = 'partidas.json';
+
+function writeYo(data){
+  if(YO.url != "localhost"){
+    var datos = JSON.stringify(YO);
+    fs.writeFile(yoParametros, datos, function(err) {
+        if(err) {
+          console.log("El archivo YO NO se guardo con exito!");
+        }
+        console.log("El archivo YO se guardo con exito!");
+    });    
+  }
+
+}
+function ReadYo(){
+  fs.readFile(yoParametros, (err, data) => {
+    if (err){ 
+      console.log("El archivo YO NO se leyo con exito!");
+    }else{
+    YO = JSON.parse(data); 
+ 
+    }
+  });
+}
+
+
+function writeusuariosLista(data){
+  var datos = JSON.stringify(usuariosLista);
+  fs.writeFile('usuariosLista.json', datos, function(err) {
+      if(err) {
+      console.log("El archivo usuarioLista NOO se guardo con exito!");
+      }else{
+        console.log("El archivo usuarioLista se guardo con exito!"); 
+      }
+  });
+}
+function ReadusuariosLista(){
+  fs.readFile('usuariosLista.json', (err, data) => {
+    if (err){ 
+      console.log("El archivo no se leyo");
+      return usuariosLista;
+    }else{
+    usuariosLista = JSON.parse(data);    
+    }
+  });
+}
+
+
+function writepartidas(data){
+  var datos = JSON.stringify(partidas);
+  fs.writeFile('partidas.json', datos, function(err) {
+      if(err) {
+          console.log("El archivo  partidas NOO se guardo con exito!");
+      }
+      else
+        console.log("El archivo partidas se guardo con exito!");
+  });
+}
+function Readpartidas(){
+  fs.readFile('partidas.json', (err, data) => {
+    if (err){ 
+      return partidas;
+    }else{
+     partidas = JSON.parse(data);  
+    }
+  });
+}
+
+//-----------------------------fin de clase archvio jajajja es que me ladille
+
+
+
+
 
 // ENDPOINT:
+
+//funcion para verificar que todos los demas existan
+app.get("/verificar-existencia", urlencodedParser, (req, res) => {  
+  //escribo en los archivos para una posible recuperacion
+  if(usuariosLista.length > 0 )writeusuariosLista(usuariosLista);
+  if(partidas.length > 0 )writepartidas(partidas);
+
+  //ahora procedo a verifificar si los demas existen 
+  console.log("GET /verificar-existencia: entre por aqui");
+  for (var i = 0; i < usuariosLista.length ; i++) {
+    let options = {
+        method: "GET",
+        uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/Yoexisto", 
+        resolveWithFullResponse: true,
+        json: true,
+        body: {   
+          existir: {
+            name:YO.name,
+            numeroplayer: YO.numeroplayer,
+            port: YO.port,
+            url:YO.url 
+          } 
+        }
+              
+    }
+    let hi= i;
+    rp(options)
+        .then(response => {
+            console.log("el otro existe");
+        })
+        .catch(e => {
+          console.log("Error el otro no responde" );
+          usuariosLista.splice(hi,1);
+
+        });
+  }
+
+  res.json({ status: "success", message: "ok" });
+});
+
+//funcion para cuando alguien me pregunta si yo existo
+app.get("/Yoexisto", urlencodedParser, (req, res) => {
+  let body = _.pick(req.body, ["existir"]);
+  ExisteUsuario= false;
+  for (var i = 0; i < usuariosLista.length ; i++) {
+      if(usuariosLista[i] == body.newplayer )ExisteUsuario = true;
+  }
+  if(!ExisteUsuario)  usuariosLista.push(body.newplayer);  
+  res.json({ status: "success", message: "ok"});
+});
+
+app.get("/jugadoreslista", urlencodedParser, (req, res) => {
+  console.log(" GET /jugadoreslista:");
+  res.json({ status: "success", message: usuariosLista });
+});
+
 
 //ESte post funciona para registrar la informacion de manera local en el servidor 
 //del nuevo usuario lo que se le pide es:
@@ -82,6 +215,7 @@ app.post("/registrarusuario", urlencodedParser, (req, res) => {
 // el numero de player logre que se hiciera automatico , genial !
 app.get("/jugador", urlencodedParser, (req, res) => {
   console.log(" GET /jugador:");
+  writeYo(YO);
   res.json({ status: "success", message: YO });
 });
 // post para crear la partida, lo ejecuta angular
@@ -815,4 +949,28 @@ app.delete("/*", (req, res) => {
 
 app.listen(YO.port, () => {
   console.log(`Started on port ${YO.port}`);
+  //recuperacion
+  ReadYo()
+  ReadusuariosLista()
+  Readpartidas()
+  //por si hay modificaciones en las partidas en los momentos que este nodo esta caido 
+  //entonces le mandamos a que replique las partidas de alguno a los que el antes estuvo conectado
+  for (var i = 0; i < usuariosLista.length ; i++) {
+    let options = {
+        method: "GET",
+        uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/partidas", 
+        resolveWithFullResponse: true,
+        json: true,
+        body: body
+    }
+    rp(options)
+        .then(response => {
+            console.log("pasamos la info para el siguiente"+ response.message);
+            partidas=response.message;
+        })
+        .catch(e => {
+
+            console.log("Error haciendo el newplayer del domino" );
+        });
+    };
 });
