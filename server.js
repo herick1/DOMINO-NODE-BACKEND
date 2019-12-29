@@ -200,7 +200,32 @@ app.get("/jugadoreslista", urlencodedParser, (req, res) => {
   res.json({ status: "success", message: usuariosLista });
 });
 
+app.post("/eliminar", urlencodedParser, (req, res) => {
+  
+fs.unlink("partidas.json", (err) => {
+  if (err) {
+      console.log("failed to delete partidas.json:"+err);
+  } else {
+      console.log('successfully deleted partidas.json');                                
+  }
+});
+fs.unlink("usuariosLista.json", (err) => {
+  if (err) {
+      console.log("failed to delete usuarioLista.json:"+err);
+  } else {
+      console.log('successfully deleted usuarioLista.json');                                
+  }
+});
 
+fs.unlink("YoParametros.json", (err) => {
+  if (err) {
+      console.log("failed to delete YoParametros.json:"+err);
+  } else {
+      console.log('successfully deleted YoParametros.json');                                
+  }
+});
+res.json({ status: "success", message:"elimine" });
+});
 //ESte post funciona para registrar la informacion de manera local en el servidor 
 //del nuevo usuario lo que se le pide es:
 app.post("/registrarusuario", urlencodedParser, (req, res) => {
