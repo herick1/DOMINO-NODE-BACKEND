@@ -89,24 +89,29 @@ function replicar(){
 console.log("repliqueeeeeeee ")
  //por si hay modificaciones en las partidas en los momentos que este nodo esta caido 
   //entonces le mandamos a que replique las partidas de alguno a los que el antes estuvo conectado
+ if(usuariosLista)
   for (var i = 0; i < usuariosLista.length ; i++) {
+     if(usuariosLista[i]){
     let options = {
         method: "GET",
         uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/partidas", 
         resolveWithFullResponse: true,
-        json: true,
-        body: body
+        json: true
     }
     rp(options)
         .then(response => {
-            console.log("pasamos la info para el siguiente"+ response.message);
-            partidas=response.message;
-            writepartidas(data)
+            //console.log(options.uri) 
+            console.log("tratamos que nos envien las partidas");
+            //console.log(response.body.message);
+              partidas=response.body.message;
+              writepartidas(partidas)
+
         })
         .catch(e => {
 
             console.log("Error haciendo el newplayer del domino" );
         });
+     }
     };
 }
 
@@ -116,8 +121,8 @@ function ReadYo(){
     if (err){ 
       console.log("El archivo YO NO se leyo con exito!");
     }else{
-    YO = JSON.parse(data); 
-    replicar()
+    YO = JSON.parse(data);
+      ReadusuariosLista()
     }
   }
   );
@@ -141,6 +146,7 @@ function ReadusuariosLista(){
       return usuariosLista;
     }else{
     usuariosLista = JSON.parse(data);    
+      Readpartidas() 
     }
   });
 }
@@ -161,7 +167,8 @@ function Readpartidas(){
     if (err){ 
       return partidas;
     }else{
-     partidas = JSON.parse(data);  
+     partidas = JSON.parse(data);
+     replicar()  
     }
   });
 }
@@ -1088,8 +1095,5 @@ app.listen(YO.port, () => {
   
   console.log(`Started on port ${YO.port}`);
   ReadYo()
-  ReadusuariosLista()
-  Readpartidas()
-
  
 });
