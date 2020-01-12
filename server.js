@@ -28,7 +28,7 @@ let YO= {
         }; 
 
 let partidas=[] 
-
+let value="";
 
 //clase partida 
 //TODO moverla de aqui
@@ -85,15 +85,45 @@ function writeYo(data){
   }
 
 }
+
+function replicar(){
+console.log("repliqueeeeeeee "+value)
+ //por si hay modificaciones en las partidas en los momentos que este nodo esta caido 
+  //entonces le mandamos a que replique las partidas de alguno a los que el antes estuvo conectado
+  for (var i = 0; i < usuariosLista.length ; i++) {
+    let options = {
+        method: "GET",
+        uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/partidas", 
+        resolveWithFullResponse: true,
+        json: true,
+        body: body
+    }
+    rp(options)
+        .then(response => {
+            console.log("pasamos la info para el siguiente"+ response.message);
+            partidas=response.message;
+            writepartidas(data)
+        })
+        .catch(e => {
+
+            console.log("Error haciendo el newplayer del domino" );
+        });
+    };
+}
+
 function ReadYo(){
+ 
   fs.readFile(yoParametros, (err, data) => {
     if (err){ 
       console.log("El archivo YO NO se leyo con exito!");
+      value="false"
     }else{
     YO = JSON.parse(data); 
- 
+    value="true"
+    replicar()
     }
-  });
+  }
+  );
 }
 
 
@@ -202,6 +232,11 @@ app.get("/jugadoreslista", urlencodedParser, (req, res) => {
   res.json({ status: "success", message: usuariosLista });
 });
 
+app.get("/value", urlencodedParser, (req, res) => {
+  //console.log(" GET /jugadoreslista:");
+  res.json({ status: "success", message: value });
+});
+
 app.post("/eliminar", urlencodedParser, (req, res) => {
   
 fs.unlink("partidas.json", (err) => {
@@ -226,6 +261,8 @@ fs.unlink("YoParametros.json", (err) => {
       console.log('successfully deleted YoParametros.json');                                
   }
 });
+this.partidas=[];
+this.YO={}
 res.json({ status: "success", message:"elimine" });
 });
 //ESte post funciona para registrar la informacion de manera local en el servidor 
@@ -1049,29 +1086,13 @@ app.delete("/*", (req, res) => {
 });
 
 app.listen(YO.port, () => {
+  
   console.log(`Started on port ${YO.port}`);
   //recuperacion
   ReadYo()
+  console.log(value)
   ReadusuariosLista()
   Readpartidas()
-  //por si hay modificaciones en las partidas en los momentos que este nodo esta caido 
-  //entonces le mandamos a que replique las partidas de alguno a los que el antes estuvo conectado
-  for (var i = 0; i < usuariosLista.length ; i++) {
-    let options = {
-        method: "GET",
-        uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/partidas", 
-        resolveWithFullResponse: true,
-        json: true,
-        body: body
-    }
-    rp(options)
-        .then(response => {
-            console.log("pasamos la info para el siguiente"+ response.message);
-            partidas=response.message;
-        })
-        .catch(e => {
 
-            console.log("Error haciendo el newplayer del domino" );
-        });
-    };
+ 
 });
