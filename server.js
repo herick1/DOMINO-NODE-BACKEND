@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 //
 //TODO hacerlo con una base de datos
 let YO= {
-          name:"herick",
+          name:"Invitado",
           numeroplayer:1,
           port: 10001,
           url: "localhost"
@@ -49,7 +49,9 @@ class Partida{
     "3:3","3:4","3:5","3:6",
     "4:4","4:5","4:6",
     "5:5","5:6",
-    "6:6"]
+    "6:6"];
+    this.jugadas_jugador1=[];    
+    this.jugadas_jugador2=[];
   }
   //funcion que te permite llenar las fichas del jugador 1 y del jugador 2 
   llenarfichas(){
@@ -550,6 +552,10 @@ function jugar(ip,id,ficha,puerto){
               if(partidas[i].fichas_jugadas.length ==0 ){
                   //agrego en el tablero
                 partidas[i].fichas_jugadas.push(ficha)
+                //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(ficha)
+                if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(ficha)
+
                 //quito la pieza que agregue
                 partidas[i].jugador1.fichas.splice(existe,1)
                 if (partidas[i].jugador1.fichas.length ==0){
@@ -572,10 +578,19 @@ function jugar(ip,id,ficha,puerto){
               if (partidas[i].fichas_jugadas.length ==1){
                 comparacion_volteada=verificarigualdad(separarficha[0],tablero[0])
                 if (verificarigualdad(separarficha[1],tablero[0]) || (comparacion_volteada )){
-                  if(comparacion_volteada )
-                    partidas[i].fichas_jugadas.unshift(volteada)
-                  else
-                    partidas[i].fichas_jugadas.unshift(ficha)
+                  if(comparacion_volteada ){
+                    partidas[i].fichas_jugadas.unshift(volteada);
+                    //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                    if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(volteada)
+                    if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(volteada)
+                  }
+                  else{
+                    partidas[i].fichas_jugadas.unshift(ficha);
+                    //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                    if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(ficha)
+                    if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(ficha)
+
+                  }
                   partidas[i].jugador1.fichas.splice(existe,1)
                   if (partidas[i].jugador1.fichas.length ==0){
                     partidas[i].estatus="FINALIZO"
@@ -592,10 +607,17 @@ function jugar(ip,id,ficha,puerto){
                   comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
                   if(verificarigualdad(separarficha[0],tablero[1]) || (comparacion_volteada)){
                     //agrego en el tablero
-                    if(comparacion_volteada )
-                      partidas[i].fichas_jugadas.push(volteada)
-                    else
-                      partidas[i].fichas_jugadas.push(ficha)
+                    if(comparacion_volteada ){
+                      partidas[i].fichas_jugadas.push(volteada);
+                      //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                      if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(volteada)
+                      if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(volteada)
+                    }else{
+                      partidas[i].fichas_jugadas.push(ficha);
+                      //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                      if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(ficha)
+                      if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(ficha)
+                    }
                     //quito la pieza que agregue
                     partidas[i].jugador1.fichas.splice(existe,1)
                     if (partidas[i].jugador1.fichas.length ==0){
@@ -617,10 +639,18 @@ function jugar(ip,id,ficha,puerto){
                 fichaderecha=partidas[i].fichas_jugadas[partidas[i].fichas_jugadas.length-1].split(":")
                 comparacion_volteada=verificarigualdad(separarficha[0],fichaizquierda[0])
                 if (verificarigualdad(separarficha[1],fichaizquierda[0])|| comparacion_volteada ){
-                  if(comparacion_volteada)
-                    partidas[i].fichas_jugadas.unshift(volteada)
-                  else
-                    partidas[i].fichas_jugadas.unshift(ficha)
+                  if(comparacion_volteada){
+                    partidas[i].fichas_jugadas.unshift(volteada);
+                    //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                    if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(volteada)
+                    if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(volteada)
+                  }
+                  else{
+                    partidas[i].fichas_jugadas.unshift(ficha);
+                    //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                    if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(ficha)
+                    if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(ficha)
+                  }
                   partidas[i].jugador1.fichas.splice(existe,1)
                   if (partidas[i].jugador1.fichas.length ==0){
                     partidas[i].estatus="FINALIZO"
@@ -637,10 +667,19 @@ function jugar(ip,id,ficha,puerto){
                   comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
                   if(verificarigualdad(separarficha[0],fichaderecha[1])|| comparacion_volteada){
                     //agrego en el tablero
-                    if(comparacion_volteada)
-                      partidas[i].fichas_jugadas.push(volteada)
-                    else
-                      partidas[i].fichas_jugadas.push(ficha)
+                    if(comparacion_volteada){
+                      partidas[i].fichas_jugadas.push(volteada);
+                      //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                      if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(volteada)
+                      if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(volteada)
+
+                    }
+                    else{
+                      partidas[i].fichas_jugadas.push(ficha);
+                      //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                      if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(ficha)
+                      if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(ficha)
+                    }
                     //quito la pieza que agregue
                     partidas[i].jugador1.fichas.splice(existe,1)
                     if (partidas[i].jugador1.fichas.length ==0){
@@ -677,6 +716,10 @@ function jugar(ip,id,ficha,puerto){
           if(partidas[i].fichas_jugadas.length ==0 ){
             //agrego en el tablero
             partidas[i].fichas_jugadas.push(ficha)
+
+            //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+            if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(ficha)
+            if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(ficha)
             //quito la pieza que agregue
             partidas[i].jugador2.fichas.splice(existe,1)
             if (partidas[i].jugador2.fichas.length ==0){
@@ -700,10 +743,16 @@ function jugar(ip,id,ficha,puerto){
               comparacion_volteada=verificarigualdad(separarficha[0],tablero[0])
               if (verificarigualdad(separarficha[1],tablero[0]) ||( comparacion_volteada )){
                 if(comparacion_volteada){
-                  partidas[i].fichas_jugadas.unshift(volteada)
+                  partidas[i].fichas_jugadas.unshift(volteada);
+                                      //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                    if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(volteada)
+                    if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(volteada)
                 }
                 else{
-                  partidas[i].fichas_jugadas.unshift(ficha)
+                  partidas[i].fichas_jugadas.unshift(ficha);
+                                      //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                    if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(ficha)
+                    if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(ficha)
                 }
                 partidas[i].jugador2.fichas.splice(existe,1)
                 if (partidas[i].jugador2.fichas.length ==0){
@@ -721,10 +770,18 @@ function jugar(ip,id,ficha,puerto){
                 comparacion_volteada=verificarigualdad(separarficha[1],tablero[1])
                 if(verificarigualdad(separarficha[0],tablero[1]) || (comparacion_volteada )){
                   //agrego en el tablero
-                  if(comparacion_volteada )
-                    partidas[i].fichas_jugadas.push(volteada)
-                  else
-                    partidas[i].fichas_jugadas.push(ficha)
+                  if(comparacion_volteada ){
+                    partidas[i].fichas_jugadas.push(volteada);
+                      //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                      if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(volteada)
+                      if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(volteada)
+                  }
+                  else{
+                    partidas[i].fichas_jugadas.push(ficha);
+                      //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                      if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(ficha)
+                      if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(ficha)
+                  }
                   //quito la pieza que agregue
                   partidas[i].jugador2.fichas.splice(existe,1)
                   if (partidas[i].jugador2.fichas.length ==0){
@@ -747,10 +804,18 @@ function jugar(ip,id,ficha,puerto){
             fichaderecha=partidas[i].fichas_jugadas[partidas[i].fichas_jugadas.length-1].split(":")
             comparacion_volteada=verificarigualdad(separarficha[0],fichaizquierda[0])
             if (verificarigualdad(separarficha[1],fichaizquierda[0])|| comparacion_volteada){
-              if(comparacion_volteada)
-                partidas[i].fichas_jugadas.unshift(volteada)
-              else 
-                partidas[i].fichas_jugadas.unshift(ficha)
+              if(comparacion_volteada){
+                partidas[i].fichas_jugadas.unshift(volteada);
+                                                      //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                    if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(volteada)
+                    if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(volteada)
+              }
+              else{ 
+                partidas[i].fichas_jugadas.unshift(ficha);
+                    //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                    if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(ficha)
+                    if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(ficha)
+              }
               partidas[i].jugador2.fichas.splice(existe,1)   
               if (partidas[i].jugador2.fichas.length ==0){
                 partidas[i].estatus="FINALIZO"
@@ -767,10 +832,21 @@ function jugar(ip,id,ficha,puerto){
               comparacion_volteada=verificarigualdad(separarficha[1],fichaderecha[1])
               if(verificarigualdad(separarficha[0],fichaderecha[1]) || comparacion_volteada){
                  //agrego en el tablero
-                if(comparacion_volteada)
-                  partidas[i].fichas_jugadas.push(volteada)
-                else
+                if(comparacion_volteada){
+                  partidas[i].fichas_jugadas.push(volteada);
+
+                    //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                      if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(volteada)
+                      if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(volteada)
+
+                }
+                else{
                   partidas[i].fichas_jugadas.push(ficha);
+
+                      //en donde vea un push de fichas_jugadas estoy agregando el historial de partida
+                      if(partidas[i].jugador1.ip == ip) partidas[i].jugadas_jugador1.push(ficha)
+                      if(partidas[i].jugador2.ip == ip) partidas[i].jugadas_jugador2.push(ficha)
+                }
                 //quito la pieza que agregue 
                 partidas[i].jugador2.fichas.splice(existe,1);
                 if(!pasoturno(1,id))
