@@ -28,7 +28,6 @@ let YO= {
         }; 
 
 let partidas=[] 
-let value="";
 
 //clase partida 
 //TODO moverla de aqui
@@ -87,7 +86,7 @@ function writeYo(data){
 }
 
 function replicar(){
-console.log("repliqueeeeeeee "+value)
+console.log("repliqueeeeeeee ")
  //por si hay modificaciones en las partidas en los momentos que este nodo esta caido 
   //entonces le mandamos a que replique las partidas de alguno a los que el antes estuvo conectado
   for (var i = 0; i < usuariosLista.length ; i++) {
@@ -116,10 +115,8 @@ function ReadYo(){
   fs.readFile(yoParametros, (err, data) => {
     if (err){ 
       console.log("El archivo YO NO se leyo con exito!");
-      value="false"
     }else{
     YO = JSON.parse(data); 
-    value="true"
     replicar()
     }
   }
@@ -232,10 +229,6 @@ app.get("/jugadoreslista", urlencodedParser, (req, res) => {
   res.json({ status: "success", message: usuariosLista });
 });
 
-app.get("/value", urlencodedParser, (req, res) => {
-  //console.log(" GET /jugadoreslista:");
-  res.json({ status: "success", message: value });
-});
 
 app.post("/eliminar", urlencodedParser, (req, res) => {
   
@@ -1088,9 +1081,7 @@ app.delete("/*", (req, res) => {
 app.listen(YO.port, () => {
   
   console.log(`Started on port ${YO.port}`);
-  //recuperacion
   ReadYo()
-  console.log(value)
   ReadusuariosLista()
   Readpartidas()
 
