@@ -183,6 +183,7 @@ app.get("/verificar-existencia", urlencodedParser, (req, res) => {
   //ahora procedo a verifificar si los demas existen 
   console.log("GET /verificar-existencia: entre por aqui");
   for (var i = 0; i < usuariosLista.length ; i++) {
+    if(usuariosLista[i]){
     let options = {
         method: "GET",
         uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/Yoexisto", 
@@ -208,6 +209,7 @@ app.get("/verificar-existencia", urlencodedParser, (req, res) => {
           usuariosLista.splice(hi,1);
 
         });
+  }
   }
 
   res.json({ status: "success", message: "ok" });
@@ -347,6 +349,7 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
     if(seUnio){
         //ciclo encargado de replicar la informacion a los demas nodos
         for (var i = 0; i < usuariosLista.length ; i++) {
+           if(usuariosLista[i]){
           let options = {
               method: "PUT",
               uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/unirsepartidaBackend", 
@@ -368,6 +371,7 @@ app.post("/unirsepartida", urlencodedParser, (req, res) => {
               .catch(e => {
                 console.log("Error uniendose a la partida del domino"+e );
               });
+        }
         }
         res.json({ status: "success", message: "correcto"});
     }
@@ -920,6 +924,7 @@ app.post("/realizarJugada", urlencodedParser, (req, res) => {
   }
   //ciclo encargado de replicar la informacion a los demas nodos
   for (var i = 0; i < usuariosLista.length ; i++) {
+    if(usuariosLista[i]){
     let options = {
         method: "PUT",
         uri: "http://"+ usuariosLista[i].url+":" + usuariosLista[i].port + "/realizarjugadaBackend", 
@@ -939,6 +944,7 @@ app.post("/realizarJugada", urlencodedParser, (req, res) => {
           console.log("Error realizando jugada"+e );
         });
         
+  }
   }
   if(mensaje == "correcto")
     res.json({ status: "success", message: body});
